@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 
+import 'domain/bedtime/bedtime_copy_engine.dart';
 import 'models/app_settings.dart';
-import 'models/bedtime_message.dart';
 import 'models/morning_summary_copy.dart';
 import 'models/nightly_result.dart';
+import 'models/streak_feedback.dart';
 import 'screens/home_screen.dart';
 import 'screens/morning_summary_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/settings_screen.dart';
-import 'services/bedtime_message_engine.dart';
 import 'services/bedtime_logic_service.dart';
 import 'services/morning_summary_copy_service.dart';
 import 'services/notification_service.dart';
 import 'services/storage_service.dart';
-import 'services/streak_feedback_service.dart';
 import 'services/streak_service.dart';
 
 class SleepNudgerApp extends StatelessWidget {
@@ -82,11 +81,8 @@ class _SleepNudgerRootState extends State<SleepNudgerRoot> {
   final NotificationService _notificationService = NotificationService.instance;
   final StreakService _streakService = StreakService.instance;
   final BedtimeLogicService _logicService = BedtimeLogicService.instance;
-  final BedtimeMessageEngine _bedtimeMessageEngine = BedtimeMessageEngine();
   final MorningSummaryCopyService _morningSummaryCopyService =
       MorningSummaryCopyService();
-  final StreakFeedbackService _streakFeedbackService =
-      const StreakFeedbackService();
 
   bool _isLoading = true;
   bool _showSettings = false;
@@ -94,7 +90,6 @@ class _SleepNudgerRootState extends State<SleepNudgerRoot> {
   NightlyResult? _currentNight;
   NightlyResult? _morningSummary;
   int _streak = 0;
-  BedtimeMessage? _homeMessage;
   MorningSummaryCopy? _morningSummaryCopy;
 
   @override
@@ -124,7 +119,6 @@ class _SleepNudgerRootState extends State<SleepNudgerRoot> {
         _currentNight = null;
         _morningSummary = null;
         _streak = 0;
-        _homeMessage = null;
         _morningSummaryCopy = null;
         _showSettings = false;
         _isLoading = false;
@@ -160,10 +154,6 @@ class _SleepNudgerRootState extends State<SleepNudgerRoot> {
     );
 
     final streak = await _storageService.loadCurrentStreak();
-    final homeMessage = _bedtimeMessageEngine.selectMessage(
-      now: now,
-      bedtimeToday: interactionNight.bedtime,
-    );
     final morningSummaryCopy = summary == null
         ? null
         : _morningSummaryCopyService.selectCopy(
@@ -179,7 +169,6 @@ class _SleepNudgerRootState extends State<SleepNudgerRoot> {
       _currentNight = interactionNight;
       _morningSummary = summary;
       _streak = streak;
-      _homeMessage = homeMessage;
       _morningSummaryCopy = morningSummaryCopy;
       _isLoading = false;
     });
@@ -306,7 +295,7 @@ class _SleepNudgerRootState extends State<SleepNudgerRoot> {
             _morningSummaryCopyService.selectCopy(
               success: morningSummary.wasSuccessful == true,
             ),
-        streakFeedback: _streakFeedbackService.resolve(_streak),
+        streakFeedback: _streakFeedbackFromCount(_streak),
         onContinue: _handleMorningSummaryContinue,
       );
     }
@@ -321,13 +310,7 @@ class _SleepNudgerRootState extends State<SleepNudgerRoot> {
     return HomeScreen(
       settings: settings,
       currentNight: currentNight,
-      sessionMessage:
-          _homeMessage ??
-          _bedtimeMessageEngine.selectMessage(
-            now: DateTime.now(),
-            bedtimeToday: currentNight.bedtime,
-          ),
-      streakFeedback: _streakFeedbackService.resolve(_streak),
+      streak: _streak,
       isReminderActive: _logicService.isReminderActive(
         currentNight,
         DateTime.now(),
@@ -339,6 +322,15 @@ class _SleepNudgerRootState extends State<SleepNudgerRoot> {
           _showSettings = true;
         });
       },
+    );
+  }
+
+  StreakFeedback _streakFeedbackFromCount(int streak) {
+    final copy = BedtimeCopyEngine(seed: 0).buildStreakCopy(streak);
+    return StreakFeedback(
+      title: copy.title,
+      countLabel: copy.countLabel,
+      subtitle: copy.subtitle,
     );
   }
 }
