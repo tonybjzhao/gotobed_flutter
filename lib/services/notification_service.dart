@@ -25,6 +25,12 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
   final BedtimeMessageEngine _messageEngine = BedtimeMessageEngine();
 
+  static const String _gentleDefaultChannelId = 'sleep_nudger_gentle';
+  static const String _strongDefaultChannelId = 'sleep_nudger_strong';
+  static const String _gentleVoiceChannelId = 'sleep_nudger_gentle_voice';
+  static const String _strongVoiceChannelId = 'sleep_nudger_strong_voice';
+  static const String _softVoiceSoundResource = 'soft_bedtime_voice';
+
   bool _initialized = false;
 
   bool get _supportsNotifications =>
@@ -139,6 +145,7 @@ class NotificationService {
       when: gentleAt,
       strong: false,
       soundEnabled: settings.soundVibrationEnabled,
+      soundProfile: settings.reminderSoundProfile,
       payload: _payloadFor(night.nightId, 'gentle'),
     );
   }
@@ -168,6 +175,7 @@ class NotificationService {
       when: night.strongReminderAt,
       strong: true,
       soundEnabled: settings.soundVibrationEnabled,
+      soundProfile: settings.reminderSoundProfile,
       payload: _payloadFor(night.nightId, 'strong'),
     );
   }
@@ -199,6 +207,7 @@ class NotificationService {
         when: night.nextReminderAt,
         strong: true,
         soundEnabled: settings.soundVibrationEnabled,
+        soundProfile: settings.reminderSoundProfile,
         payload: _payloadFor(night.nightId, 'snooze'),
       );
     }
@@ -233,6 +242,7 @@ class NotificationService {
       when: overdueAt,
       strong: true,
       soundEnabled: settings.soundVibrationEnabled,
+      soundProfile: settings.reminderSoundProfile,
       payload: _payloadFor(night.nightId, 'overdue'),
     );
   }
@@ -252,7 +262,10 @@ class NotificationService {
     return cancelNightNotifications(night.nightId);
   }
 
-  Future<void> scheduleTestNotification({required bool soundEnabled}) async {
+  Future<void> scheduleTestNotification({
+    required bool soundEnabled,
+    ReminderSoundProfile soundProfile = ReminderSoundProfile.system,
+  }) async {
     if (!_supportsNotifications) {
       return;
     }
@@ -267,6 +280,7 @@ class NotificationService {
       when: when,
       strong: true,
       soundEnabled: soundEnabled,
+      soundProfile: soundProfile,
       payload: _payloadFor('test', 'manual'),
     );
   }
@@ -279,7 +293,7 @@ class NotificationService {
 
     await androidImplementation?.createNotificationChannel(
       const AndroidNotificationChannel(
-        'sleep_nudger_gentle',
+        _gentleDefaultChannelId,
         'Gentle reminders',
         description: 'Calm reminders before bedtime.',
         importance: Importance.defaultImportance,
@@ -288,10 +302,32 @@ class NotificationService {
 
     await androidImplementation?.createNotificationChannel(
       const AndroidNotificationChannel(
-        'sleep_nudger_strong',
+        _strongDefaultChannelId,
         'Bedtime reminders',
         description: 'Stronger nudges when bedtime arrives.',
         importance: Importance.high,
+      ),
+    );
+
+    await androidImplementation?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        _gentleVoiceChannelId,
+        'Gentle reminders (voice)',
+        description: 'Calm reminders before bedtime with a soft voice.',
+        importance: Importance.defaultImportance,
+        playSound: true,
+        sound: RawResourceAndroidNotificationSound(_softVoiceSoundResource),
+      ),
+    );
+
+    await androidImplementation?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        _strongVoiceChannelId,
+        'Bedtime reminders (voice)',
+        description: 'Stronger nudges when bedtime arrives with a soft voice.',
+        importance: Importance.high,
+        playSound: true,
+        sound: RawResourceAndroidNotificationSound(_softVoiceSoundResource),
       ),
     );
   }
@@ -303,11 +339,21 @@ class NotificationService {
     required DateTime when,
     required bool strong,
     required bool soundEnabled,
+    required ReminderSoundProfile soundProfile,
     required String payload,
   }) async {
+    final channelId = _channelIdFor(
+      strong: strong,
+      soundEnabled: soundEnabled,
+      soundProfile: soundProfile,
+    );
+
+    final voiceSoundEnabled =
+        soundEnabled && soundProfile == ReminderSoundProfile.softVoice;
+
     final details = NotificationDetails(
       android: AndroidNotificationDetails(
-        strong ? 'sleep_nudger_strong' : 'sleep_nudger_gentle',
+        channelId,
         strong ? 'Bedtime reminders' : 'Gentle reminders',
         channelDescription: strong
             ? 'Stronger nudges when bedtime arrives.'
@@ -316,6 +362,11 @@ class NotificationService {
         priority: strong ? Priority.high : Priority.defaultPriority,
         playSound: soundEnabled,
         enableVibration: soundEnabled,
+        sound: voiceSoundEnabled
+            ? const RawResourceAndroidNotificationSound(
+                _softVoiceSoundResource,
+              )
+            : null,
       ),
       iOS: DarwinNotificationDetails(
         presentAlert: true,
@@ -333,6 +384,18 @@ class NotificationService {
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       payload: payload,
     );
+  }
+
+  String _channelIdFor({
+    required bool strong,
+    required bool soundEnabled,
+    required ReminderSoundProfile soundProfile,
+  }) {
+    if (!soundEnabled || soundProfile == ReminderSoundProfile.system) {
+      return strong ? _strongDefaultChannelId : _gentleDefaultChannelId;
+    }
+
+    return strong ? _strongVoiceChannelId : _gentleVoiceChannelId;
   }
 
   int _notificationId(String nightId, int slot) {

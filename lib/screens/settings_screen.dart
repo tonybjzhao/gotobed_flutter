@@ -27,6 +27,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late int _leadMinutes;
   late bool _gentleReminderEnabled;
   late bool _soundVibrationEnabled;
+  late ReminderSoundProfile _reminderSoundProfile;
   bool _isSaving = false;
   bool _isTestingNotification = false;
 
@@ -37,6 +38,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _leadMinutes = widget.settings.reminderLeadMinutes;
     _gentleReminderEnabled = widget.settings.gentleReminderEnabled;
     _soundVibrationEnabled = widget.settings.soundVibrationEnabled;
+    _reminderSoundProfile = widget.settings.reminderSoundProfile;
   }
 
   Future<void> _pickBedtime() async {
@@ -67,6 +69,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         reminderLeadMinutes: _leadMinutes,
         gentleReminderEnabled: _gentleReminderEnabled,
         soundVibrationEnabled: _soundVibrationEnabled,
+        reminderSoundProfile: _reminderSoundProfile,
       ),
     );
 
@@ -166,6 +169,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: const Text('Sound and vibration'),
             subtitle: const Text('Add sound and haptics to bedtime nudges.'),
           ),
+          const SizedBox(height: 16),
+          InputDecorator(
+            decoration: _decoration('Reminder sound'),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<ReminderSoundProfile>(
+                value: _reminderSoundProfile,
+                dropdownColor: const Color(0xFF211B2A),
+                items: ReminderSoundProfile.values
+                    .map(
+                      (profile) => DropdownMenuItem<ReminderSoundProfile>(
+                        value: profile,
+                        child: Text(profile.label),
+                      ),
+                    )
+                    .toList(),
+                onChanged: _soundVibrationEnabled
+                    ? (value) {
+                        if (value == null) {
+                          return;
+                        }
+                        setState(() {
+                          _reminderSoundProfile = value;
+                        });
+                      }
+                    : null,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'If reminders arrive late on some Android phones, disable battery optimization for GoToBed.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: const Color(0xFFCBB9A6),
+              height: 1.4,
+            ),
+          ),
           const SizedBox(height: 24),
           OutlinedButton(
             onPressed: _isTestingNotification ? null : _sendTestNotification,
@@ -235,6 +274,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await NotificationService.instance.requestPermissions();
     await NotificationService.instance.scheduleTestNotification(
       soundEnabled: _soundVibrationEnabled,
+      soundProfile: _reminderSoundProfile,
     );
 
     if (!mounted) {

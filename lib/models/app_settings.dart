@@ -2,6 +2,38 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
+enum ReminderSoundProfile { system, softVoice }
+
+extension ReminderSoundProfileX on ReminderSoundProfile {
+  String get storageKey {
+    switch (this) {
+      case ReminderSoundProfile.system:
+        return 'system';
+      case ReminderSoundProfile.softVoice:
+        return 'soft_voice';
+    }
+  }
+
+  String get label {
+    switch (this) {
+      case ReminderSoundProfile.system:
+        return 'System chime';
+      case ReminderSoundProfile.softVoice:
+        return 'Soft voice';
+    }
+  }
+
+  static ReminderSoundProfile fromStorage(String? raw) {
+    switch (raw) {
+      case 'soft_voice':
+        return ReminderSoundProfile.softVoice;
+      case 'system':
+      default:
+        return ReminderSoundProfile.system;
+    }
+  }
+}
+
 class AppSettings {
   const AppSettings({
     required this.bedtimeHour,
@@ -9,6 +41,7 @@ class AppSettings {
     required this.reminderLeadMinutes,
     required this.gentleReminderEnabled,
     required this.soundVibrationEnabled,
+    this.reminderSoundProfile = ReminderSoundProfile.system,
   });
 
   final int bedtimeHour;
@@ -16,6 +49,7 @@ class AppSettings {
   final int reminderLeadMinutes;
   final bool gentleReminderEnabled;
   final bool soundVibrationEnabled;
+  final ReminderSoundProfile reminderSoundProfile;
 
   static const int defaultGracePeriodMinutes = 20;
 
@@ -26,6 +60,7 @@ class AppSettings {
       reminderLeadMinutes: 30,
       gentleReminderEnabled: true,
       soundVibrationEnabled: true,
+      reminderSoundProfile: ReminderSoundProfile.system,
     );
   }
 
@@ -37,6 +72,7 @@ class AppSettings {
     int? reminderLeadMinutes,
     bool? gentleReminderEnabled,
     bool? soundVibrationEnabled,
+    ReminderSoundProfile? reminderSoundProfile,
   }) {
     return AppSettings(
       bedtimeHour: bedtimeHour ?? this.bedtimeHour,
@@ -46,6 +82,7 @@ class AppSettings {
           gentleReminderEnabled ?? this.gentleReminderEnabled,
       soundVibrationEnabled:
           soundVibrationEnabled ?? this.soundVibrationEnabled,
+      reminderSoundProfile: reminderSoundProfile ?? this.reminderSoundProfile,
     );
   }
 
@@ -56,6 +93,7 @@ class AppSettings {
       'reminderLeadMinutes': reminderLeadMinutes,
       'gentleReminderEnabled': gentleReminderEnabled,
       'soundVibrationEnabled': soundVibrationEnabled,
+      'reminderSoundProfile': reminderSoundProfile.storageKey,
     };
   }
 
@@ -66,6 +104,9 @@ class AppSettings {
       reminderLeadMinutes: map['reminderLeadMinutes'] as int? ?? 30,
       gentleReminderEnabled: map['gentleReminderEnabled'] as bool? ?? true,
       soundVibrationEnabled: map['soundVibrationEnabled'] as bool? ?? true,
+      reminderSoundProfile: ReminderSoundProfileX.fromStorage(
+        map['reminderSoundProfile'] as String?,
+      ),
     );
   }
 
