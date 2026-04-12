@@ -29,6 +29,8 @@ class NotificationService {
   static const String _strongDefaultChannelId = 'sleep_nudger_strong';
   static const String _gentleVoiceChannelId = 'sleep_nudger_gentle_voice';
   static const String _strongVoiceChannelId = 'sleep_nudger_strong_voice';
+  static const String _testDefaultChannelId = 'sleep_nudger_test';
+  static const String _testVoiceChannelId = 'sleep_nudger_test_voice';
   static const String _softVoiceSoundResource = 'soft_bedtime_voice';
 
   bool _initialized = false;
@@ -273,14 +275,39 @@ class NotificationService {
     await initialize();
 
     final when = DateTime.now().add(const Duration(seconds: 5));
-    await _scheduleNotification(
+    final useVoice = soundEnabled && soundProfile == ReminderSoundProfile.softVoice;
+
+    final details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        useVoice ? _testVoiceChannelId : _testDefaultChannelId,
+        useVoice ? 'Test reminder (voice)' : 'Test reminder',
+        channelDescription: useVoice
+            ? 'Test reminder with soft voice sound.'
+            : 'Test reminder with system sound.',
+        importance: Importance.max,
+        priority: Priority.max,
+        playSound: soundEnabled,
+        enableVibration: soundEnabled,
+        sound: useVoice
+            ? const RawResourceAndroidNotificationSound(
+                _softVoiceSoundResource,
+              )
+            : null,
+      ),
+      iOS: DarwinNotificationDetails(
+        presentAlert: true,
+        presentSound: soundEnabled,
+        presentBadge: false,
+      ),
+    );
+
+    await _plugin.zonedSchedule(
       id: 999001,
       title: 'GoToBed test',
       body: 'This is a test notification to confirm Android delivery.',
-      when: when,
-      strong: true,
-      soundEnabled: soundEnabled,
-      soundProfile: soundProfile,
+      scheduledDate: tz.TZDateTime.from(when, tz.local),
+      notificationDetails: details,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       payload: _payloadFor('test', 'manual'),
     );
   }
@@ -326,6 +353,27 @@ class NotificationService {
         'Bedtime reminders (voice)',
         description: 'Stronger nudges when bedtime arrives with a soft voice.',
         importance: Importance.high,
+        playSound: true,
+        sound: RawResourceAndroidNotificationSound(_softVoiceSoundResource),
+      ),
+    );
+
+    await androidImplementation?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        _testDefaultChannelId,
+        'Test reminder',
+        description: 'Manual test reminder with sound.',
+        importance: Importance.max,
+        playSound: true,
+      ),
+    );
+
+    await androidImplementation?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        _testVoiceChannelId,
+        'Test reminder (voice)',
+        description: 'Manual test reminder with soft voice sound.',
+        importance: Importance.max,
         playSound: true,
         sound: RawResourceAndroidNotificationSound(_softVoiceSoundResource),
       ),

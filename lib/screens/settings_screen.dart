@@ -282,6 +282,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _sendTestNotification() async {
+    if (!_soundVibrationEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Turn on Sound and vibration to hear the test nudge.'),
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _isTestingNotification = true;
     });
