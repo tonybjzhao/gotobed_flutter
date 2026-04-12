@@ -1,4 +1,4 @@
-package com.example.byebyemobile_flutter
+package com.in5km.gotobed
 
 import io.flutter.embedding.android.FlutterActivity
 
