@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../models/app_settings.dart';
 import '../services/notification_service.dart';
@@ -329,6 +330,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
           'Pixel: App info > App battery usage > Allow background usage.',
         ];
 
+        final copyText = <String>[
+          'GoToBed reminder troubleshooting',
+          '',
+          ...steps,
+          '',
+          'Brand-specific hints',
+          ...brandHints,
+        ].join('\n');
+
         return SafeArea(
           top: false,
           child: Padding(
@@ -387,6 +397,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       style: Theme.of(sheetContext).textTheme.bodySmall
                           ?.copyWith(color: const Color(0xFFCBB9A6), height: 1.35),
                     ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      await Clipboard.setData(ClipboardData(text: copyText));
+                      if (!sheetContext.mounted) {
+                        return;
+                      }
+                      ScaffoldMessenger.of(sheetContext).showSnackBar(
+                        const SnackBar(
+                          content: Text('Troubleshooting steps copied.'),
+                        ),
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFF2B36F),
+                      side: const BorderSide(color: Color(0x55F2B36F)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    icon: const Icon(Icons.copy_rounded, size: 18),
+                    label: const Text('Copy steps'),
                   ),
                 ),
               ],
