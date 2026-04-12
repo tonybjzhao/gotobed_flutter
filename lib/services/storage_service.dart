@@ -14,7 +14,21 @@ class StorageService {
   static const String _nightlyResultsKey = 'sleep_nudger_nightly_results';
   static const String _streakKey = 'sleep_nudger_current_streak';
 
-  Future<SharedPreferences> get _prefs async => SharedPreferences.getInstance();
+  SharedPreferences? _cachedPrefs;
+
+  Future<void> initialize() async {
+    _cachedPrefs ??= await SharedPreferences.getInstance();
+  }
+
+  Future<SharedPreferences> get _prefs async {
+    await initialize();
+    return _cachedPrefs!;
+  }
+
+  Future<bool> hasCompletedOnboarding() async {
+    final prefs = await _prefs;
+    return prefs.containsKey(_settingsKey);
+  }
 
   Future<AppSettings?> loadSettings() async {
     final prefs = await _prefs;

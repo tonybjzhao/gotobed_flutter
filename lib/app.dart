@@ -99,6 +99,7 @@ class _SleepNudgerRootState extends State<SleepNudgerRoot> {
   }
 
   Future<void> _initialize() async {
+    await _storageService.initialize();
     await _notificationService.initialize();
     await _refreshState();
   }
@@ -199,6 +200,7 @@ class _SleepNudgerRootState extends State<SleepNudgerRoot> {
 
   Future<void> _handleSettingsSave(AppSettings settings) async {
     await _storageService.saveSettings(settings);
+    await _notificationService.requestPermissions();
     if (!mounted) {
       return;
     }

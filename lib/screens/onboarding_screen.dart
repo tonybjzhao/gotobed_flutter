@@ -88,7 +88,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Set a bedtime and let the app give you a calm nudge before late-night scrolling turns into regret.',
+                'Set a bedtime once. We’ll keep the rest calm, simple, and easy to come back to.',
                 style: textTheme.bodyLarge?.copyWith(
                   color: const Color(0xFFCBB9A6),
                   height: 1.5,
@@ -124,6 +124,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       });
                     },
                   ),
+                ),
+              ),
+              const SizedBox(height: 28),
+              Text(
+                'You’ll get a gentle reminder before bedtime, then a clearer nudge if you are still up.',
+                style: textTheme.bodyMedium?.copyWith(
+                  color: const Color(0xFFCBB9A6),
+                  height: 1.45,
                 ),
               ),
               const SizedBox(height: 28),

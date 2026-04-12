@@ -127,7 +127,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
             contentPadding: EdgeInsets.zero,
             title: const Text('Gentle reminder'),
-            subtitle: const Text('Send a calm nudge before bedtime.'),
+            subtitle: const Text('Start softly before bedtime.'),
           ),
           const SizedBox(height: 8),
           SwitchListTile(
@@ -139,7 +139,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
             contentPadding: EdgeInsets.zero,
             title: const Text('Sound and vibration'),
-            subtitle: const Text('Use notification sound and haptics.'),
+            subtitle: const Text('Add sound and haptics to bedtime nudges.'),
           ),
           const SizedBox(height: 24),
           PrimaryButton(
