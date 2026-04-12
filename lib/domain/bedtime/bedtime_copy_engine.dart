@@ -81,7 +81,7 @@ class BedtimeCopyEngine {
         return const TonightCopy(
           title: 'Last night ran late.',
           subtitle: 'One late night does not undo your progress.',
-          nextReminderLabel: 'Start again tonight',
+          nextReminderLabel: 'Tonight is a fresh start',
           tonightPlan:
               'Take the reset gently. A small reset is still progress.',
           cta: 'Continue',
@@ -93,7 +93,7 @@ class BedtimeCopyEngine {
   StreakDisplayCopy buildStreakCopy(int streak) {
     if (streak <= 0) {
       return const StreakDisplayCopy(
-        title: 'Start again tonight',
+        title: 'Begin again tonight',
         countLabel: '0 nights',
         subtitle: 'Just tonight is enough.',
       );

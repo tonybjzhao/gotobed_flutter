@@ -37,20 +37,20 @@ const List<MorningSummaryCopy> _successCopies = <MorningSummaryCopy>[
 const List<MorningSummaryCopy> _failureCopies = <MorningSummaryCopy>[
   MorningSummaryCopy(
     title: 'It happens.',
-    subtitle: 'No guilt. Try again tonight.',
+    subtitle: 'No guilt. Begin again tonight.',
     reflection: 'Coming back tonight still counts as progress.',
-    shareText: 'Resetting tonight. One late night does not cancel the goal.',
+    shareText: 'Resetting tonight.\nOne late night does not erase the journey.',
   ),
   MorningSummaryCopy(
     title: 'Last night ran late.',
     subtitle: 'One late night does not undo your progress.',
     reflection: 'You are still building this, even on the uneven nights.',
-    shareText: 'Last night ran late, but tonight is still a fresh start.',
+    shareText: 'Last night ran late.\nTonight is a fresh start.',
   ),
   MorningSummaryCopy(
     title: 'A reset is still progress.',
     subtitle: 'Tonight is a fresh start.',
     reflection: 'A softer restart is better than giving up on the rhythm.',
-    shareText: 'Starting again tonight. Sleep Nudger is keeping it gentle.',
+    shareText: 'Starting again tonight.\nThat still counts.',
   ),
 ];

@@ -25,7 +25,7 @@ class MorningSummaryScreen extends StatelessWidget {
     final success = result.wasSuccessful == true;
     final shareTitle = success
         ? '${streakFeedback.countLabel} of going to bed on time'
-        : 'Starting again tonight';
+      : 'Tonight is a fresh start';
 
     return Scaffold(
       body: SafeArea(
