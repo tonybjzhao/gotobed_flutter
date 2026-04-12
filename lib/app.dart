@@ -39,7 +39,7 @@ class SleepNudgerApp extends StatelessWidget {
         );
 
     return MaterialApp(
-      title: 'Sleep Nudger',
+      title: 'GoToBed',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
