@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../domain/bedtime/bedtime_controller.dart';
+import '../domain/bedtime/bedtime_state.dart';
 import '../models/app_settings.dart';
 import '../models/nightly_result.dart';
 import '../models/streak_feedback.dart';
@@ -83,6 +84,12 @@ class _HomeScreenState extends State<HomeScreen> {
       context,
     ).formatTimeOfDay(widget.settings.bedtime);
     final copy = _controller.tonightCopy;
+    final heroCopy = _heroCopyForNow(
+      now: DateTime.now(),
+      state: _controller.state,
+      fallbackTitle: copy.title,
+      fallbackSubtitle: copy.subtitle,
+    );
     final ritualMode =
         _isConfirmingBedtime || widget.currentNight.confirmedAt != null;
 
@@ -118,8 +125,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 switchOutCurve: Curves.easeIn,
                 transitionBuilder: _fadeSlideTransition,
                 child: Text(
-                  copy.title,
-                  key: ValueKey<String>(copy.title),
+                  heroCopy.title,
+                  key: ValueKey<String>(heroCopy.title),
                   style: (compactLayout
                           ? Theme.of(context).textTheme.headlineLarge
                           : Theme.of(context).textTheme.displaySmall)
@@ -133,8 +140,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 switchOutCurve: Curves.easeIn,
                 transitionBuilder: _fadeSlideTransition,
                 child: Text(
-                  copy.subtitle,
-                  key: ValueKey<String>(copy.subtitle),
+                  heroCopy.subtitle,
+                  key: ValueKey<String>(heroCopy.subtitle),
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: const Color(0xFFCBB9A6),
                     height: compactLayout ? 1.4 : 1.5,
@@ -330,7 +337,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 20),
               Text(
-                'Root screen by design: Tonight is home. Settings and a small About sheet are the soft exits.',
+                'Tonight is home by design. Settings and About are quiet side paths, so the app always brings you back to winding down for the night.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: const Color(0xFFF2B36F),
                   height: 1.45,
@@ -364,4 +371,41 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     return '${target.month}/${target.day} ·';
   }
+
+  _HeroCopy _heroCopyForNow({
+    required DateTime now,
+    required TonightState state,
+    required String fallbackTitle,
+    required String fallbackSubtitle,
+  }) {
+    if (state == TonightState.missed) {
+      return _HeroCopy(title: fallbackTitle, subtitle: fallbackSubtitle);
+    }
+
+    if (now.hour < 21) {
+      return const _HeroCopy(
+        title: 'A calm night starts now.',
+        subtitle: 'A little earlier tonight can make tomorrow softer.',
+      );
+    }
+
+    if (now.hour < 23) {
+      return const _HeroCopy(
+        title: 'It’s getting late.',
+        subtitle: 'Just a little earlier tonight is enough.',
+      );
+    }
+
+    return const _HeroCopy(
+      title: 'Still awake?',
+      subtitle: 'Let’s wind down and call it a night soon.',
+    );
+  }
+}
+
+class _HeroCopy {
+  const _HeroCopy({required this.title, required this.subtitle});
+
+  final String title;
+  final String subtitle;
 }

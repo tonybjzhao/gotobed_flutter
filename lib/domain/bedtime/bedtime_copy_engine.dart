@@ -72,9 +72,11 @@ class BedtimeCopyEngine {
         return const TonightCopy(
           title: 'Wind-down time.',
           subtitle: 'A calm night starts now.',
-          nextReminderLabel: 'No more nudges tonight.',
-          tonightPlan: 'You are set for tonight. No more nudges.',
-          cta: 'All set for tonight',
+          nextReminderLabel:
+              'You\'re on track tonight.\nWe\'ll be here if you need a nudge.',
+          tonightPlan:
+              'Let\'s wind down tonight.\nNo pressure. Just a little earlier.',
+          cta: 'I\'m ready for tonight',
           ctaEnabled: false,
         );
       case TonightState.missed:
@@ -93,7 +95,7 @@ class BedtimeCopyEngine {
   StreakDisplayCopy buildStreakCopy(int streak) {
     if (streak <= 0) {
       return const StreakDisplayCopy(
-        title: 'Begin again tonight',
+        title: 'Start your first calm night',
         countLabel: '0 nights',
         subtitle: 'Just tonight is enough.',
       );

@@ -180,7 +180,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Text(
               _isTestingNotification
                   ? 'Scheduling test notification...'
-                  : 'Test notification (5 sec)',
+                  : 'Try a test nudge (5 sec)',
             ),
           ),
           const SizedBox(height: 12),
