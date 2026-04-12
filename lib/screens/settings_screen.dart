@@ -53,14 +53,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _save() async {
+    final correctedFromDaytime = _isLikelyAfternoonBedtime(_bedtime);
+    final bedtimeToSave = _normalizedBedtimeForSave();
+
     setState(() {
       _isSaving = true;
     });
 
     await widget.onSave(
       AppSettings(
-        bedtimeHour: _bedtime.hour,
-        bedtimeMinute: _bedtime.minute,
+        bedtimeHour: bedtimeToSave.hour,
+        bedtimeMinute: bedtimeToSave.minute,
         reminderLeadMinutes: _leadMinutes,
         gentleReminderEnabled: _gentleReminderEnabled,
         soundVibrationEnabled: _soundVibrationEnabled,
@@ -72,7 +75,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
     setState(() {
       _isSaving = false;
+      _bedtime = bedtimeToSave;
     });
+
+    if (correctedFromDaytime) {
+      final formatted = MaterialLocalizations.of(
+        context,
+      ).formatTimeOfDay(bedtimeToSave);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Saved as $formatted for bedtime.')),
+      );
+    }
   }
 
   @override
@@ -193,15 +206,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   String? get _daytimeHint {
-    if (_bedtime.period != DayPeriod.pm ||
-        _bedtime.hour < 12 ||
-        _bedtime.hour >= 18) {
+    if (!_isLikelyAfternoonBedtime(_bedtime)) {
       return null;
     }
 
     final amTime = TimeOfDay(hour: _bedtime.hour - 12, minute: _bedtime.minute);
     final formatted = MaterialLocalizations.of(context).formatTimeOfDay(amTime);
-    return 'This is an afternoon time. Did you mean $formatted?';
+    return 'That looks like daytime. Did you mean $formatted?';
+  }
+
+  TimeOfDay _normalizedBedtimeForSave() {
+    if (!_isLikelyAfternoonBedtime(_bedtime)) {
+      return _bedtime;
+    }
+
+    return TimeOfDay(hour: _bedtime.hour - 12, minute: _bedtime.minute);
+  }
+
+  bool _isLikelyAfternoonBedtime(TimeOfDay time) {
+    return time.period == DayPeriod.pm && time.hour >= 12 && time.hour < 18;
   }
 
   Future<void> _sendTestNotification() async {
