@@ -205,6 +205,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               height: 1.4,
             ),
           ),
+          const SizedBox(height: 4),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => _showReminderTroubleshootingSheet(context),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFFF2B36F),
+                padding: EdgeInsets.zero,
+                visualDensity: VisualDensity.compact,
+              ),
+              icon: const Icon(Icons.tune_rounded, size: 18),
+              label: const Text('Troubleshoot delayed reminders'),
+            ),
+          ),
           const SizedBox(height: 24),
           OutlinedButton(
             onPressed: _isTestingNotification ? null : _sendTestNotification,
@@ -289,6 +303,97 @@ class _SettingsScreenState extends State<SettingsScreen> {
       const SnackBar(
         content: Text('Test notification scheduled for 5 seconds from now.'),
       ),
+    );
+  }
+
+  Future<void> _showReminderTroubleshootingSheet(BuildContext context) {
+    return showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF211B2A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (BuildContext sheetContext) {
+        final steps = <String>[
+          '1. Open system settings and search for "Battery optimization".',
+          '2. Find GoToBed and set it to "Not optimized" or "Unrestricted".',
+          '3. In App info, allow notifications, sound, and background activity.',
+          '4. Run a 2-minute test after saving bedtime changes.',
+        ];
+
+        final brandHints = <String>[
+          'Xiaomi/Redmi: Security > Battery > App battery saver > GoToBed > No restrictions.',
+          'Huawei/Honor: Battery > App launch > GoToBed > Manage manually (enable all toggles).',
+          'Samsung: Battery > Background usage limits > Never sleeping apps > add GoToBed.',
+          'OnePlus/Oppo/Vivo: Battery > App battery management > GoToBed > Allow background activity.',
+          'Pixel: App info > App battery usage > Allow background usage.',
+        ];
+
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF5D516A),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  'Reminder Troubleshooting',
+                  style: Theme.of(sheetContext).textTheme.headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Some Android phones delay scheduled notifications to save power. Try these steps:',
+                  style: Theme.of(sheetContext).textTheme.bodyMedium?.copyWith(
+                    color: const Color(0xFFCBB9A6),
+                    height: 1.45,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                ...steps.map(
+                  (step) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      step,
+                      style: Theme.of(sheetContext).textTheme.bodyMedium
+                          ?.copyWith(height: 1.4),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Brand-specific hints',
+                  style: Theme.of(sheetContext).textTheme.titleSmall?.copyWith(
+                    color: const Color(0xFFF2B36F),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ...brandHints.map(
+                  (hint) => Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Text(
+                      hint,
+                      style: Theme.of(sheetContext).textTheme.bodySmall
+                          ?.copyWith(color: const Color(0xFFCBB9A6), height: 1.35),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
