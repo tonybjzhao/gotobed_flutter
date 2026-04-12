@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -313,12 +314,22 @@ class NotificationService {
       ),
     );
 
-    await _plugin.zonedSchedule(
+    final fallbackDetails = NotificationDetails(
+      android: details.android,
+      iOS: DarwinNotificationDetails(
+        presentAlert: true,
+        presentSound: soundEnabled,
+        presentBadge: false,
+      ),
+    );
+
+    await _zonedScheduleWithIosFallback(
       id: 999001,
       title: 'GoToBed test',
       body: 'This is a test notification to confirm Android delivery.',
       scheduledDate: tz.TZDateTime.from(when, tz.local),
       notificationDetails: details,
+      fallbackNotificationDetails: fallbackDetails,
       androidScheduleMode: await _safeScheduleMode(preferExact: true),
       payload: _payloadFor('test', 'manual'),
     );
@@ -450,15 +461,62 @@ class NotificationService {
       ),
     );
 
-    await _plugin.zonedSchedule(
+    final fallbackDetails = NotificationDetails(
+      android: details.android,
+      iOS: DarwinNotificationDetails(
+        presentAlert: true,
+        presentSound: soundEnabled,
+        presentBadge: false,
+      ),
+    );
+
+    await _zonedScheduleWithIosFallback(
       id: id,
       title: title,
       body: body,
       scheduledDate: tz.TZDateTime.from(when, tz.local),
       notificationDetails: details,
+      fallbackNotificationDetails: fallbackDetails,
       androidScheduleMode: await _safeScheduleMode(preferExact: false),
       payload: payload,
     );
+  }
+
+  Future<void> _zonedScheduleWithIosFallback({
+    required int id,
+    required String title,
+    required String body,
+    required tz.TZDateTime scheduledDate,
+    required NotificationDetails notificationDetails,
+    required NotificationDetails fallbackNotificationDetails,
+    required AndroidScheduleMode androidScheduleMode,
+    required String payload,
+  }) async {
+    try {
+      await _plugin.zonedSchedule(
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: scheduledDate,
+        notificationDetails: notificationDetails,
+        androidScheduleMode: androidScheduleMode,
+        payload: payload,
+      );
+    } on PlatformException {
+      if (kIsWeb || !Platform.isIOS) {
+        rethrow;
+      }
+
+      await _plugin.zonedSchedule(
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: scheduledDate,
+        notificationDetails: fallbackNotificationDetails,
+        androidScheduleMode: androidScheduleMode,
+        payload: payload,
+      );
+    }
   }
 
   Future<AndroidScheduleMode> _safeScheduleMode({
