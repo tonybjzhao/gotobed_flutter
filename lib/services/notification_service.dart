@@ -29,9 +29,9 @@ class NotificationService {
   final BedtimeMessageEngine _messageEngine = BedtimeMessageEngine();
   final Random _random = Random();
 
-  static const String _gentleDefaultChannelId = 'sleep_nudger_gentle_v2';
-  static const String _strongDefaultChannelId = 'sleep_nudger_strong_v2';
-  static const String _testDefaultChannelId = 'sleep_nudger_test_v2';
+  static const String _gentleDefaultChannelId = 'sleep_nudger_gentle_v3';
+  static const String _strongDefaultChannelId = 'sleep_nudger_strong_v3';
+  static const String _testDefaultChannelId = 'sleep_nudger_test_v3';
   static const List<String> _softVoiceSoundResources = <String>[
     'sleep_1',
     'sleep_2',
@@ -306,6 +306,8 @@ class NotificationService {
       ),
       iOS: DarwinNotificationDetails(
         presentAlert: true,
+        presentBanner: true,
+        presentList: true,
         presentSound: soundEnabled,
         presentBadge: false,
         sound: useVoice ? _iosSoundFileName(voiceVariant!) : null,
@@ -337,6 +339,8 @@ class NotificationService {
         description: 'Calm reminders before bedtime.',
         importance: Importance.defaultImportance,
         playSound: true,
+        sound: UriAndroidNotificationSound(
+            'content://settings/system/notification_sound'),
       ),
     );
     debugPrint('📢 [CHANNELS] Created: $_gentleDefaultChannelId (playSound=true)');
@@ -348,6 +352,8 @@ class NotificationService {
         description: 'Stronger nudges when bedtime arrives.',
         importance: Importance.high,
         playSound: true,
+        sound: UriAndroidNotificationSound(
+            'content://settings/system/notification_sound'),
       ),
     );
     debugPrint('📢 [CHANNELS] Created: $_strongDefaultChannelId (playSound=true)');
@@ -359,6 +365,8 @@ class NotificationService {
         description: 'Manual test reminder with sound.',
         importance: Importance.max,
         playSound: true,
+        sound: UriAndroidNotificationSound(
+            'content://settings/system/notification_sound'),
       ),
     );
     debugPrint('📢 [CHANNELS] Created: $_testDefaultChannelId (playSound=true)');
@@ -447,6 +455,8 @@ class NotificationService {
       ),
       iOS: DarwinNotificationDetails(
         presentAlert: true,
+        presentBanner: true,
+        presentList: true,
         presentSound: soundEnabled,
         presentBadge: false,
         sound: voiceSoundEnabled ? _iosSoundFileName(voiceVariant!) : null,
@@ -455,9 +465,11 @@ class NotificationService {
 
     final fallbackDetails = NotificationDetails(
       android: details.android,
-      iOS: DarwinNotificationDetails(
+      iOS: const DarwinNotificationDetails(
         presentAlert: true,
-        presentSound: soundEnabled,
+        presentBanner: true,
+        presentList: true,
+        presentSound: true,
         presentBadge: false,
       ),
     );
