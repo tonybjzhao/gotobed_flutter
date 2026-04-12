@@ -282,7 +282,8 @@ class NotificationService {
     final when = DateTime.now().add(const Duration(seconds: 5));
     final useVoice =
       soundEnabled && soundProfile == ReminderSoundProfile.softVoice;
-    final voiceVariant = useVoice ? _voiceVariantForSchedule() : null;
+    final voiceVariantIndex = useVoice ? _voiceVariantForSchedule() : null;
+    final voiceVariant = voiceVariantIndex == null ? null : voiceVariantIndex + 1;
 
     final details = NotificationDetails(
       android: AndroidNotificationDetails(
@@ -299,7 +300,7 @@ class NotificationService {
         enableVibration: soundEnabled,
         sound: useVoice
             ? RawResourceAndroidNotificationSound(
-                _softVoiceSoundResources[voiceVariant!],
+                _softVoiceSoundResources[voiceVariantIndex!],
               )
             : null,
       ),
@@ -307,6 +308,7 @@ class NotificationService {
         presentAlert: true,
         presentSound: soundEnabled,
         presentBadge: false,
+        sound: useVoice ? _iosSoundFileName(voiceVariant!) : null,
       ),
     );
 
@@ -405,9 +407,12 @@ class NotificationService {
     required ReminderSoundProfile soundProfile,
     required String payload,
   }) async {
-    final voiceVariant = soundEnabled && soundProfile == ReminderSoundProfile.softVoice
-        ? _voiceVariantForSchedule()
-        : null;
+    final voiceVariantIndex =
+      soundEnabled && soundProfile == ReminderSoundProfile.softVoice
+      ? _voiceVariantForSchedule()
+      : null;
+    final voiceVariant =
+      voiceVariantIndex == null ? null : voiceVariantIndex + 1;
 
     final channelId = _channelIdFor(
       strong: strong,
@@ -432,7 +437,7 @@ class NotificationService {
         enableVibration: soundEnabled,
         sound: voiceSoundEnabled
             ? RawResourceAndroidNotificationSound(
-                _softVoiceSoundResources[voiceVariant!],
+                _softVoiceSoundResources[voiceVariantIndex!],
               )
             : null,
       ),
@@ -440,6 +445,7 @@ class NotificationService {
         presentAlert: true,
         presentSound: soundEnabled,
         presentBadge: false,
+        sound: voiceSoundEnabled ? _iosSoundFileName(voiceVariant!) : null,
       ),
     );
 
@@ -473,6 +479,10 @@ class NotificationService {
 
   int _voiceVariantForSchedule() {
     return _random.nextInt(_softVoiceSoundResources.length);
+  }
+
+  String _iosSoundFileName(int variant) {
+    return 'sleep_$variant.wav';
   }
 
   String _voiceChannelId({
