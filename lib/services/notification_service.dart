@@ -100,6 +100,7 @@ class NotificationService {
 
     await scheduleGentleReminder(settings: settings, night: night, now: now);
     await scheduleBedtimeReminder(settings: settings, night: night, now: now);
+    await scheduleOverdueReminder(settings: settings, night: night, now: now);
   }
 
   Future<void> rescheduleFromSettings({
@@ -203,6 +204,39 @@ class NotificationService {
     }
   }
 
+  Future<void> scheduleOverdueReminder({
+    required AppSettings settings,
+    required NightlyResult night,
+    required DateTime now,
+  }) async {
+    if (!_supportsNotifications) {
+      return;
+    }
+
+    await initialize();
+
+    final overdueAt = night.strongReminderAt.add(const Duration(minutes: 15));
+    if (!overdueAt.isAfter(now) ||
+        !overdueAt.isBefore(night.graceDeadline) ||
+        night.confirmedAt != null ||
+        night.isResolved) {
+      return;
+    }
+
+    final overdueMessage = _messageEngine.selectMessageForTone(
+      BedtimeTone.firm,
+    );
+    await _scheduleNotification(
+      id: _notificationId(night.nightId, 4),
+      title: overdueMessage.title,
+      body: overdueMessage.subtitle ?? 'Just 5 more minutes… or sleep?',
+      when: overdueAt,
+      strong: true,
+      soundEnabled: settings.soundVibrationEnabled,
+      payload: _payloadFor(night.nightId, 'overdue'),
+    );
+  }
+
   Future<void> cancelNightNotifications(String nightId) async {
     if (!_supportsNotifications) {
       return;
@@ -211,6 +245,7 @@ class NotificationService {
     await _plugin.cancel(id: _notificationId(nightId, 1));
     await _plugin.cancel(id: _notificationId(nightId, 2));
     await _plugin.cancel(id: _notificationId(nightId, 3));
+    await _plugin.cancel(id: _notificationId(nightId, 4));
   }
 
   Future<void> cancelTonightReminders(NightlyResult night) {
