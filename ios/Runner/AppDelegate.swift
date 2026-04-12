@@ -20,7 +20,13 @@ import UIKit
     )
     settingsChannel.setMethodCallHandler { call, result in
       if call.method == "openNotificationSettings" {
-        if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
+        let urlString: String
+        if #available(iOS 16.0, *) {
+          urlString = UIApplication.openNotificationSettingsURLString
+        } else {
+          urlString = UIApplication.openSettingsURLString
+        }
+        if let url = URL(string: urlString) {
           UIApplication.shared.open(url)
         }
         result(nil)
