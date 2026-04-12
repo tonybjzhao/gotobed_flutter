@@ -100,6 +100,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 value: formattedTime,
                 onTap: _pickBedtime,
               ),
+              if (_daytimeHint != null) ...<Widget>[
+                const SizedBox(height: 10),
+                Text(
+                  _daytimeHint!,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: const Color(0xFFF2B36F),
+                    height: 1.4,
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
               InputDecorator(
                 decoration: _decoration('Reminder lead time'),
@@ -157,6 +167,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         borderSide: BorderSide.none,
       ),
     );
+  }
+
+  String? get _daytimeHint {
+    if (_bedtime.period != DayPeriod.pm ||
+        _bedtime.hour < 12 ||
+        _bedtime.hour >= 18) {
+      return null;
+    }
+
+    final amTime = TimeOfDay(hour: _bedtime.hour - 12, minute: _bedtime.minute);
+    final formatted = MaterialLocalizations.of(context).formatTimeOfDay(amTime);
+    return 'This is an afternoon time. Did you mean $formatted?';
   }
 }
 

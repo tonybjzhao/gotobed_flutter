@@ -252,6 +252,25 @@ class NotificationService {
     return cancelNightNotifications(night.nightId);
   }
 
+  Future<void> scheduleTestNotification({required bool soundEnabled}) async {
+    if (!_supportsNotifications) {
+      return;
+    }
+
+    await initialize();
+
+    final when = DateTime.now().add(const Duration(seconds: 5));
+    await _scheduleNotification(
+      id: 999001,
+      title: 'GoToBed test',
+      body: 'This is a test notification to confirm Android delivery.',
+      when: when,
+      strong: true,
+      soundEnabled: soundEnabled,
+      payload: _payloadFor('test', 'manual'),
+    );
+  }
+
   Future<void> _createChannels() async {
     final androidImplementation = _plugin
         .resolvePlatformSpecificImplementation<

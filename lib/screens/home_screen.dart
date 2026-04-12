@@ -85,9 +85,13 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Tonight'),
         actions: <Widget>[
-          TextButton(
+          TextButton.icon(
             onPressed: widget.onOpenSettings,
-            child: const Text('Edit'),
+            icon: const Icon(Icons.settings_outlined, size: 18),
+            label: const Text('Settings'),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFFF2B36F),
+            ),
           ),
         ],
       ),
@@ -162,6 +166,37 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: copy.ctaEnabled ? _handlePrimaryAction : null,
                 ),
               ),
+              const SizedBox(height: 14),
+              Center(
+                child: Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 10,
+                  children: <Widget>[
+                    TextButton(
+                      onPressed: widget.onOpenSettings,
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFFCBB9A6),
+                        textStyle: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      child: const Text('Settings'),
+                    ),
+                    Text(
+                      '·',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: const Color(0xFF6E6478),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => _showAboutSheet(context),
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFFCBB9A6),
+                        textStyle: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      child: const Text('About'),
+                    ),
+                  ],
+                ),
+              ),
               if (widget.isReminderActive && !ritualMode) ...<Widget>[
                 const SizedBox(height: 12),
                 OutlinedButton(
@@ -193,13 +228,19 @@ class _HomeScreenState extends State<HomeScreen> {
     if (widget.currentNight.confirmedAt != null) {
       return _controller.tonightCopy.nextReminderLabel;
     }
+
+    final now = DateTime.now();
+    final localizations = MaterialLocalizations.of(context);
+    final time = localizations.formatTimeOfDay(
+      TimeOfDay.fromDateTime(widget.currentNight.nextReminderAt),
+    );
+    final whenLabel = _dayLabel(now, widget.currentNight.nextReminderAt);
+
     if (widget.isReminderActive) {
-      return _controller.tonightCopy.nextReminderLabel;
+      return 'Active now · $whenLabel $time';
     }
 
-    final localizations = MaterialLocalizations.of(context);
-    final time = TimeOfDay.fromDateTime(widget.currentNight.nextReminderAt);
-    return localizations.formatTimeOfDay(time);
+    return '$whenLabel $time';
   }
 
   Widget _fadeSlideTransition(Widget child, Animation<double> animation) {
@@ -236,11 +277,77 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _showAboutSheet(BuildContext context) {
+    return showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF211B2A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (BuildContext context) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF5D516A),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'About GoToBed',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'GoToBed is a gentle bedtime companion built to help late-night scrolling end a little earlier, without guilt.',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: const Color(0xFFCBB9A6),
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Root screen by design: Tonight is home. Settings and a small About sheet are the soft exits.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: const Color(0xFFF2B36F),
+                  height: 1.45,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   StreakFeedback _asLegacyStreakFeedback() {
     return StreakFeedback(
       title: _controller.streakCopy.title,
       countLabel: _controller.streakCopy.countLabel,
       subtitle: _controller.streakCopy.subtitle,
     );
+  }
+
+  String _dayLabel(DateTime now, DateTime target) {
+    final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = today.add(const Duration(days: 1));
+    final targetDay = DateTime(target.year, target.month, target.day);
+
+    if (targetDay == today) {
+      return 'Today ·';
+    }
+    if (targetDay == tomorrow) {
+      return 'Tomorrow ·';
+    }
+    return '${target.month}/${target.day} ·';
   }
 }

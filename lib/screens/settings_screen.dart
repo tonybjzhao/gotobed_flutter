@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/app_settings.dart';
+import '../services/notification_service.dart';
 import '../widgets/primary_button.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -27,6 +28,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late bool _gentleReminderEnabled;
   late bool _soundVibrationEnabled;
   bool _isSaving = false;
+  bool _isTestingNotification = false;
 
   @override
   void initState() {
@@ -91,6 +93,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             value: MaterialLocalizations.of(context).formatTimeOfDay(_bedtime),
             onTap: _pickBedtime,
           ),
+          if (_daytimeHint != null) ...<Widget>[
+            const SizedBox(height: 10),
+            Text(
+              _daytimeHint!,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: const Color(0xFFF2B36F),
+                height: 1.4,
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           InputDecorator(
             decoration: _decoration('Reminder lead time'),
@@ -142,6 +154,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
             subtitle: const Text('Add sound and haptics to bedtime nudges.'),
           ),
           const SizedBox(height: 24),
+          OutlinedButton(
+            onPressed: _isTestingNotification ? null : _sendTestNotification,
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size.fromHeight(52),
+              side: const BorderSide(color: Color(0x55F2B36F)),
+              foregroundColor: const Color(0xFFF2B36F),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+            ),
+            child: Text(
+              _isTestingNotification
+                  ? 'Scheduling test notification...'
+                  : 'Test notification (5 sec)',
+            ),
+          ),
+          const SizedBox(height: 12),
           PrimaryButton(
             label: _isSaving ? 'Saving...' : 'Save changes',
             onPressed: _isSaving ? null : _save,
@@ -159,6 +188,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
         borderSide: BorderSide.none,
+      ),
+    );
+  }
+
+  String? get _daytimeHint {
+    if (_bedtime.period != DayPeriod.pm ||
+        _bedtime.hour < 12 ||
+        _bedtime.hour >= 18) {
+      return null;
+    }
+
+    final amTime = TimeOfDay(hour: _bedtime.hour - 12, minute: _bedtime.minute);
+    final formatted = MaterialLocalizations.of(context).formatTimeOfDay(amTime);
+    return 'This is an afternoon time. Did you mean $formatted?';
+  }
+
+  Future<void> _sendTestNotification() async {
+    setState(() {
+      _isTestingNotification = true;
+    });
+
+    await NotificationService.instance.requestPermissions();
+    await NotificationService.instance.scheduleTestNotification(
+      soundEnabled: _soundVibrationEnabled,
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _isTestingNotification = false;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Test notification scheduled for 5 seconds from now.'),
       ),
     );
   }
