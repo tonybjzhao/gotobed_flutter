@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../models/app_settings.dart';
+import '../models/bedtime_message.dart';
 import '../models/nightly_result.dart';
+import '../models/streak_feedback.dart';
 import '../widgets/bedtime_status_card.dart';
 import '../widgets/info_card.dart';
 import '../widgets/primary_button.dart';
@@ -11,7 +13,8 @@ class HomeScreen extends StatelessWidget {
     super.key,
     required this.settings,
     required this.currentNight,
-    required this.streak,
+    required this.sessionMessage,
+    required this.streakFeedback,
     required this.isReminderActive,
     required this.onConfirmBedtime,
     required this.onSnooze,
@@ -20,7 +23,8 @@ class HomeScreen extends StatelessWidget {
 
   final AppSettings settings;
   final NightlyResult currentNight;
-  final int streak;
+  final BedtimeMessage sessionMessage;
+  final StreakFeedback streakFeedback;
   final bool isReminderActive;
   final Future<void> Function() onConfirmBedtime;
   final Future<void> Function() onSnooze;
@@ -46,14 +50,15 @@ class HomeScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
           children: <Widget>[
             Text(
-              'Wind-down time 🙂',
+              sessionMessage.title,
               style: Theme.of(
                 context,
               ).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 10),
             Text(
-              'A simple nudge to help you stop scrolling and head to bed.',
+              sessionMessage.subtitle ??
+                  'A simple nudge to help you stop scrolling and head to bed.',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: const Color(0xFFCBB9A6),
                 height: 1.5,
@@ -63,15 +68,10 @@ class HomeScreen extends StatelessWidget {
             BedtimeStatusCard(
               bedtimeLabel: bedtimeText,
               nextReminderLabel: nextReminderText,
-              streak: streak,
+              streakFeedback: streakFeedback,
             ),
             const SizedBox(height: 16),
-            InfoCard(
-              title: 'Tonight’s tone',
-              subtitle: settings.gentleReminderEnabled
-                  ? 'Gentle reminder first, then a firmer bedtime nudge.'
-                  : 'Direct bedtime reminder only.',
-            ),
+            InfoCard(title: 'Tonight’s tone', subtitle: _toneDescription()),
             const SizedBox(height: 24),
             PrimaryButton(
               label: bedtimeConfirmed
@@ -114,5 +114,12 @@ class HomeScreen extends StatelessWidget {
     final localizations = MaterialLocalizations.of(context);
     final time = TimeOfDay.fromDateTime(currentNight.nextReminderAt);
     return localizations.formatTimeOfDay(time);
+  }
+
+  String _toneDescription() {
+    if (settings.gentleReminderEnabled) {
+      return 'Each night can sound a little different, starting soft and getting clearer near bedtime.';
+    }
+    return 'Bedtime nudges stay simple and direct when it is time to put the phone down.';
   }
 }

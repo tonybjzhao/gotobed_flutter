@@ -7,7 +7,9 @@ import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../models/app_settings.dart';
+import '../models/bedtime_tone.dart';
 import '../models/nightly_result.dart';
+import 'bedtime_message_engine.dart';
 
 class NotificationService {
   NotificationService._();
@@ -21,6 +23,7 @@ class NotificationService {
 
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
+  final BedtimeMessageEngine _messageEngine = BedtimeMessageEngine();
 
   bool _initialized = false;
 
@@ -99,10 +102,13 @@ class NotificationService {
     if (settings.gentleReminderEnabled &&
         gentleAt != null &&
         gentleAt.isAfter(now)) {
+      final gentleMessage = _messageEngine.selectMessageForTone(
+        BedtimeTone.gentle,
+      );
       await _scheduleNotification(
         id: _notificationId(night.nightId, 1),
-        title: 'Wind-down time',
-        body: 'A gentle nudge before bedtime.',
+        title: gentleMessage.title,
+        body: gentleMessage.subtitle ?? 'A gentle nudge before bedtime.',
         when: gentleAt,
         strong: false,
         soundEnabled: settings.soundVibrationEnabled,
@@ -111,10 +117,13 @@ class NotificationService {
     }
 
     if (night.strongReminderAt.isAfter(now)) {
+      final bedtimeMessage = _messageEngine.selectMessageForTone(
+        BedtimeTone.neutral,
+      );
       await _scheduleNotification(
         id: _notificationId(night.nightId, 2),
-        title: 'It is time to rest.',
-        body: 'Still awake? Tomorrow will feel better with sleep.',
+        title: bedtimeMessage.title,
+        body: bedtimeMessage.subtitle ?? 'Tonight can still end well.',
         when: night.strongReminderAt,
         strong: true,
         soundEnabled: settings.soundVibrationEnabled,
@@ -140,10 +149,13 @@ class NotificationService {
     }
 
     if (night.nextReminderAt.isAfter(now)) {
+      final snoozeMessage = _messageEngine.selectMessageForTone(
+        BedtimeTone.firm,
+      );
       await _scheduleNotification(
         id: _notificationId(night.nightId, 3),
-        title: 'Still awake?',
-        body: 'Take the cue and head to bed.',
+        title: snoozeMessage.title,
+        body: snoozeMessage.subtitle ?? 'Take the cue and head to bed.',
         when: night.nextReminderAt,
         strong: true,
         soundEnabled: settings.soundVibrationEnabled,
