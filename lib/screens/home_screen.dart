@@ -73,6 +73,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
+    final viewportHeight =
+        media.size.height - media.padding.vertical - kToolbarHeight;
+    final compactLayout =
+        viewportHeight < 780 || media.textScaler.scale(1) > 1.05;
     final nextReminderText = _nextReminderLabel(context);
     final bedtimeText = MaterialLocalizations.of(
       context,
@@ -100,7 +105,12 @@ class _HomeScreenState extends State<HomeScreen> {
           duration: const Duration(milliseconds: 320),
           color: ritualMode ? const Color(0x0DFFFFFF) : Colors.transparent,
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+            padding: EdgeInsets.fromLTRB(
+              24,
+              compactLayout ? 6 : 12,
+              24,
+              compactLayout ? 22 : 32,
+            ),
             children: <Widget>[
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 280),
@@ -110,12 +120,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Text(
                   copy.title,
                   key: ValueKey<String>(copy.title),
-                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: (compactLayout
+                          ? Theme.of(context).textTheme.headlineLarge
+                          : Theme.of(context).textTheme.displaySmall)
+                      ?.copyWith(fontWeight: FontWeight.w700),
                 ),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: compactLayout ? 6 : 10),
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 280),
                 switchInCurve: Curves.easeOut,
@@ -126,11 +137,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   key: ValueKey<String>(copy.subtitle),
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: const Color(0xFFCBB9A6),
-                    height: 1.5,
+                    height: compactLayout ? 1.4 : 1.5,
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: compactLayout ? 18 : 24),
               AnimatedSlide(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeOut,
@@ -144,17 +155,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         bedtimeLabel: bedtimeText,
                         nextReminderLabel: nextReminderText,
                         streakFeedback: _asLegacyStreakFeedback(),
+                        compact: compactLayout,
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: compactLayout ? 12 : 16),
                       InfoCard(
                         title: 'Tonight’s plan',
                         subtitle: copy.tonightPlan,
+                        compact: compactLayout,
                       ),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: compactLayout ? 18 : 24),
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 320),
                 switchInCurve: Curves.easeOut,
@@ -164,9 +177,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   key: ValueKey<String>(copy.cta),
                   label: _isConfirmingBedtime ? 'Settling in...' : copy.cta,
                   onPressed: copy.ctaEnabled ? _handlePrimaryAction : null,
+                  dense: compactLayout,
                 ),
               ),
-              const SizedBox(height: 14),
+              SizedBox(height: compactLayout ? 10 : 14),
               Center(
                 child: Wrap(
                   crossAxisAlignment: WrapCrossAlignment.center,

@@ -5,10 +5,12 @@ class PrimaryButton extends StatelessWidget {
     super.key,
     required this.label,
     required this.onPressed,
+    this.dense = false,
   });
 
   final String label;
   final Future<void> Function()? onPressed;
+  final bool dense;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +21,7 @@ class PrimaryButton extends StatelessWidget {
               await onPressed!();
             },
       style: FilledButton.styleFrom(
-        minimumSize: const Size.fromHeight(56),
+        minimumSize: Size.fromHeight(dense ? 52 : 56),
         backgroundColor: const Color(0xFFF2B36F),
         foregroundColor: const Color(0xFF2B1802),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),

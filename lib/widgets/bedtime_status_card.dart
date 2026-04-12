@@ -8,18 +8,22 @@ class BedtimeStatusCard extends StatelessWidget {
     required this.bedtimeLabel,
     required this.nextReminderLabel,
     required this.streakFeedback,
+    this.compact = false,
   });
 
   final String bedtimeLabel;
   final String nextReminderLabel;
   final StreakFeedback streakFeedback;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final useVerticalMetrics = constraints.maxWidth < 380;
-        final cardPadding = constraints.maxWidth < 360 ? 18.0 : 20.0;
+        final cardPadding = compact
+            ? (constraints.maxWidth < 360 ? 16.0 : 18.0)
+            : (constraints.maxWidth < 360 ? 18.0 : 20.0);
         final Widget metricsSection = useVerticalMetrics
             ? Column(
                 children: <Widget>[
@@ -27,9 +31,10 @@ class BedtimeStatusCard extends StatelessWidget {
                     label: 'Next reminder',
                     value: nextReminderLabel,
                     emphasized: true,
+                    compact: compact,
                   ),
-                  const SizedBox(height: 12),
-                  _StreakMetric(feedback: streakFeedback),
+                  SizedBox(height: compact ? 10 : 12),
+                  _StreakMetric(feedback: streakFeedback, compact: compact),
                 ],
               )
             : Row(
@@ -40,10 +45,13 @@ class BedtimeStatusCard extends StatelessWidget {
                       label: 'Next reminder',
                       value: nextReminderLabel,
                       emphasized: true,
+                      compact: compact,
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(child: _StreakMetric(feedback: streakFeedback)),
+                  SizedBox(width: compact ? 12 : 16),
+                  Expanded(
+                    child: _StreakMetric(feedback: streakFeedback, compact: compact),
+                  ),
                 ],
               );
 
@@ -59,14 +67,15 @@ class BedtimeStatusCard extends StatelessWidget {
                     color: const Color(0xFFCBB9A6),
                   ),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: compact ? 4 : 6),
                 Text(
                   bedtimeLabel,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: (compact
+                          ? Theme.of(context).textTheme.headlineSmall
+                          : Theme.of(context).textTheme.headlineMedium)
+                      ?.copyWith(fontWeight: FontWeight.w700),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: compact ? 14 : 20),
                 metricsSection,
               ],
             ),
@@ -82,11 +91,13 @@ class _Metric extends StatelessWidget {
     required this.label,
     required this.value,
     this.emphasized = false,
+    this.compact = false,
   });
 
   final String label;
   final String value;
   final bool emphasized;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -94,6 +105,7 @@ class _Metric extends StatelessWidget {
       backgroundColor: emphasized
           ? const Color(0xFF332B3E)
           : const Color(0xFF2B2435),
+      compact: compact,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -118,15 +130,17 @@ class _Metric extends StatelessWidget {
 }
 
 class _StreakMetric extends StatelessWidget {
-  const _StreakMetric({required this.feedback});
+  const _StreakMetric({required this.feedback, this.compact = false});
 
   final StreakFeedback feedback;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return _MetricShell(
       backgroundColor: const Color(0x1AF2B36F),
       border: Border.all(color: const Color(0x33F2B36F)),
+      compact: compact,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -136,7 +150,7 @@ class _StreakMetric extends StatelessWidget {
               context,
             ).textTheme.labelMedium?.copyWith(color: const Color(0xFFCBB9A6)),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: compact ? 6 : 8),
           Text(
             feedback.title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -145,14 +159,14 @@ class _StreakMetric extends StatelessWidget {
               height: 1.2,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: compact ? 2 : 4),
           Text(
             feedback.countLabel,
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: compact ? 4 : 6),
           Text(
             feedback.subtitle,
             style: Theme.of(
@@ -170,22 +184,24 @@ class _MetricShell extends StatelessWidget {
     required this.child,
     this.backgroundColor = const Color(0xFF2B2435),
     this.border,
+    this.compact = false,
   });
 
   final Widget child;
   final Color backgroundColor;
   final BoxBorder? border;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      constraints: const BoxConstraints(minHeight: 144),
-      padding: const EdgeInsets.all(16),
+      constraints: BoxConstraints(minHeight: compact ? 124 : 144),
+      padding: EdgeInsets.all(compact ? 14 : 16),
       decoration: BoxDecoration(
         color: backgroundColor,
         border: border,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(compact ? 16 : 18),
       ),
       child: child,
     );

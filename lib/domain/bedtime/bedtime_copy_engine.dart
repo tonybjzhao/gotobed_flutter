@@ -73,8 +73,7 @@ class BedtimeCopyEngine {
           title: 'Wind-down time.',
           subtitle: 'A calm night starts now.',
           nextReminderLabel: 'No more nudges tonight.',
-          tonightPlan:
-              'You are set for tonight. We will hold off on more bedtime nudges.',
+          tonightPlan: 'You are set for tonight. No more nudges.',
           cta: 'All set for tonight',
           ctaEnabled: false,
         );
