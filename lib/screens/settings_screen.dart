@@ -314,11 +314,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _isTestingNotification = true;
     });
 
-    await NotificationService.instance.requestPermissions();
-    await NotificationService.instance.scheduleTestNotification(
-      soundEnabled: _soundVibrationEnabled,
-      soundProfile: _reminderSoundProfile,
-    );
+    try {
+      await NotificationService.instance.requestPermissions();
+      await NotificationService.instance.scheduleTestNotification(
+        soundEnabled: _soundVibrationEnabled,
+        soundProfile: _reminderSoundProfile,
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isTestingNotification = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Unable to schedule test nudge. Check notification permission and try again.',
+          ),
+        ),
+      );
+      return;
+    }
 
     if (!mounted) {
       return;

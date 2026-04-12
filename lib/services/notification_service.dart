@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
@@ -318,7 +319,7 @@ class NotificationService {
       body: 'This is a test notification to confirm Android delivery.',
       scheduledDate: tz.TZDateTime.from(when, tz.local),
       notificationDetails: details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: await _safeScheduleMode(preferExact: true),
       payload: _payloadFor('test', 'manual'),
     );
   }
@@ -455,9 +456,34 @@ class NotificationService {
       body: body,
       scheduledDate: tz.TZDateTime.from(when, tz.local),
       notificationDetails: details,
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      androidScheduleMode: await _safeScheduleMode(preferExact: false),
       payload: payload,
     );
+  }
+
+  Future<AndroidScheduleMode> _safeScheduleMode({
+    required bool preferExact,
+  }) async {
+    if (!preferExact) {
+      return AndroidScheduleMode.inexactAllowWhileIdle;
+    }
+
+    final androidImplementation = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+
+    try {
+      final canScheduleExact =
+          await androidImplementation?.canScheduleExactNotifications();
+      if (canScheduleExact == true) {
+        return AndroidScheduleMode.exactAllowWhileIdle;
+      }
+    } on PlatformException {
+      // Fall through to inexact mode for devices where exact alarms are denied.
+    }
+
+    return AndroidScheduleMode.inexactAllowWhileIdle;
   }
 
   String _channelIdFor({
