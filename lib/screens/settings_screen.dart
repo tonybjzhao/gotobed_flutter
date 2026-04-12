@@ -6,6 +6,18 @@ import '../models/app_settings.dart';
 import '../services/notification_service.dart';
 import '../widgets/primary_button.dart';
 
+// Channel for opening the platform notification settings screen.
+const MethodChannel _settingsChannel =
+    MethodChannel('com.in5km.gotobed/settings');
+
+Future<void> _openNotificationSettings() async {
+  try {
+    await _settingsChannel.invokeMethod<void>('openNotificationSettings');
+  } catch (_) {
+    // ignore on platforms that don't support it
+  }
+}
+
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({
     super.key,
@@ -347,7 +359,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Test notification scheduled for 5 seconds from now.'),
+        content: Text('Test notification sent — check your notification shade.'),
       ),
     );
   }
@@ -445,30 +457,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 const SizedBox(height: 14),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: OutlinedButton.icon(
-                    onPressed: () async {
-                      await Clipboard.setData(ClipboardData(text: copyText));
-                      if (!sheetContext.mounted) {
-                        return;
-                      }
-                      ScaffoldMessenger.of(sheetContext).showSnackBar(
-                        const SnackBar(
-                          content: Text('Troubleshooting steps copied.'),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          await Clipboard.setData(ClipboardData(text: copyText));
+                          if (!sheetContext.mounted) {
+                            return;
+                          }
+                          ScaffoldMessenger.of(sheetContext).showSnackBar(
+                            const SnackBar(
+                              content: Text('Troubleshooting steps copied.'),
+                            ),
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFFF2B36F),
+                          side: const BorderSide(color: Color(0x55F2B36F)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                         ),
-                      );
-                    },
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFFF2B36F),
-                      side: const BorderSide(color: Color(0x55F2B36F)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        icon: const Icon(Icons.copy_rounded, size: 18),
+                        label: const Text('Copy steps'),
                       ),
                     ),
-                    icon: const Icon(Icons.copy_rounded, size: 18),
-                    label: const Text('Copy steps'),
-                  ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _openNotificationSettings,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFFF2B36F),
+                          side: const BorderSide(color: Color(0x55F2B36F)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        icon: const Icon(Icons.notifications_active_outlined, size: 18),
+                        label: const Text('Notification settings'),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

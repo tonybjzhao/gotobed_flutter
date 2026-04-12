@@ -1,0 +1,93 @@
+Launching lib/main.dart on 24090RA29C in debug mode...
+Running Gradle task 'assembleDebug'...                             14.1s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+Installing build/app/outputs/flutter-apk/app-debug.apk...        2,982ms
+D/FlutterJNI(16200): Beginning load of flutter...
+D/FlutterJNI(16200): flutter (null) was loaded normally!
+I/flutter (16200): [IMPORTANT:flutter/shell/platform/android/android_context_vk_impeller.cc(62)] Using the Impeller rendering backend (Vulkan).
+D/FlutterRenderer(16200): Width is zero. 0,0
+D/FlutterRenderer(16200): Width is zero. 0,0
+D/FlutterJNI(16200): Sending viewport metrics to the engine.
+I/flutter (16200): 📢 [CHANNELS] Creating notification channels for Android
+I/flutter (16200): 📢 [CHANNELS] Created: sleep_nudger_gentle_v3 (playSound=true)
+D/FlutterJNI(16200): Sending viewport metrics to the engine.
+I/flutter (16200): 📢 [CHANNELS] Created: sleep_nudger_strong_v3 (playSound=true)
+I/flutter (16200): 📢 [CHANNELS] Created: sleep_nudger_test_v3 (playSound=true)
+I/flutter (16200): 📢 [CHANNELS] Created: sleep_nudger_gentle_v2_voice_1 (sound=sleep_1)
+I/flutter (16200): 📢 [CHANNELS] Created: sleep_nudger_strong_v2_voice_1 (sound=sleep_1)
+I/flutter (16200): 📢 [CHANNELS] Created: sleep_nudger_test_v2_voice_1 (sound=sleep_1)
+I/flutter (16200): 📢 [CHANNELS] Created: sleep_nudger_gentle_v2_voice_2 (sound=sleep_2)
+I/flutter (16200): 📢 [CHANNELS] Created: sleep_nudger_strong_v2_voice_2 (sound=sleep_2)
+I/flutter (16200): 📢 [CHANNELS] Created: sleep_nudger_test_v2_voice_2 (sound=sleep_2)
+I/flutter (16200): 📢 [CHANNELS] Created: sleep_nudger_gentle_v2_voice_3 (sound=sleep_3)
+I/flutter (16200): 📢 [CHANNELS] Created: sleep_nudger_strong_v2_voice_3 (sound=sleep_3)
+I/flutter (16200): 📢 [CHANNELS] Created: sleep_nudger_test_v2_voice_3 (sound=sleep_3)
+I/flutter (16200): 📢 [CHANNELS] Created: sleep_nudger_gentle_v2_voice_4 (sound=sleep_4)
+I/flutter (16200): 📢 [CHANNELS] Created: sleep_nudger_strong_v2_voice_4 (sound=sleep_4)
+I/flutter (16200): 📢 [CHANNELS] Created: sleep_nudger_test_v2_voice_4 (sound=sleep_4)
+I/flutter (16200): 📢 [CHANNELS] Created: sleep_nudger_gentle_v2_voice_5 (sound=sleep_5)
+I/flutter (16200): 📢 [CHANNELS] Created: sleep_nudger_strong_v2_voice_5 (sound=sleep_5)
+I/flutter (16200): 📢 [CHANNELS] Created: sleep_nudger_test_v2_voice_5 (sound=sleep_5)
+I/m.in5km.gotobed(16200): Compiler allocated 6363KB to compile void android.view.ViewRootImpl.performTraversals()
+Syncing files to device 24090RA29C...                           
+I/Choreographer(16200): Skipped 44 frames!  The application may be doing too much work on its main thread.
+Syncing files to device 24090RA29C...                              209ms
+
+Flutter run key commands.
+r Hot reload. 🔥🔥🔥
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
+
+A Dart VM Service on 24090RA29C is available at: http://127.0.0.1:50804/bDHBl-AgavY=/
+The Flutter DevTools debugger and profiler on 24090RA29C is available at: http://127.0.0.1:50804/bDHBl-AgavY=/devtools/?uri=ws://127.0.0.1:50804/bDHBl-AgavY=/ws
+I/GrallocExtra(16200): gralloc_extra_query:is_SW3D 0
+W/libc    (16200): Access denied finding property "ro.vendor.display.iris_x7.support"
+D/BLASTBufferQueue(16200): [37d2561 SurfaceView[com.in5km.gotobed/com.in5km.gotobed.MainActivity]#1](f:0,a:1) acquireNextBufferLocked size=1220x2712 mFrameNumber=1 applyTransaction=true mTimestamp=777486822616264(auto) mPendingTransactions.size=0 graphicBufferId=69578470195210 transform=0
+D/WmSystemUiDebug(16200): set navigation bar color,Alpha=1.0, RGB:0,0,0 caller:io.flutter.plugin.platform.PlatformPlugin.setSystemChromeSystemUIOverlayStyle:514 io.flutter.plugin.platform.PlatformPlugin.access$700:36 io.flutter.plugin.platform.PlatformPlugin$1.setSystemUiOverlayStyle:123 io.flutter.embedding.engine.systemchannels.PlatformChannel$1.onMethodCall:130 io.flutter.plugin.common.MethodChannel$IncomingMethodCallHandler.onMessage:267 io.flutter.embedding.engine.dart.DartMessenger.invokeHandler:286 io.flutter.embedding.engine.dart.DartMessenger.lambda$dispatchMessageToQueue$0$io-flutter-embedding-engine-dart-DartMessenger:313 io.flutter.embedding.engine.dart.DartMessenger$$ExternalSyntheticLambda0.run:0 android.os.Handler.handleCallback:1029 android.os.Handler.dispatchMessage:107 
+D/VRI[MainActivity](16200): vri.Setup new sync=wmsSync-VRI[MainActivity]#1
+D/BLASTBufferQueue(16200): [VRI[MainActivity]#0](f:0,a:1) acquireNextBufferLocked size=1220x2712 mFrameNumber=1 applyTransaction=true mTimestamp=777486881183725(auto) mPendingTransactions.size=0 graphicBufferId=69578470195218 transform=0
+D/VRI[MainActivity](16200): vri.reportDrawFinished 0 0 Rect(0, 0 - 1220, 2712)
+E/TurboSchedMonitor(16200): failed to find setSchedAffinity method com.in5km.gotobed
+E/TurboSchedMonitor(16200): failed to find setSchedAffinity method com.in5km.gotobed
+I/HandWritingStubImpl(16200): refreshLastKeyboardType: 1
+I/HandWritingStubImpl(16200): getCurrentKeyboardType: 1
+D/InsetsController(16200): hide(ime(), fromIme=false)
+I/ImeTracker(16200): com.in5km.gotobed:d2940c6b: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+I/HandWritingStubImpl(16200): getCurrentKeyboardType: 1
+D/ProfileInstaller(16200): Installing profile for com.in5km.gotobed
+I/m.in5km.gotobed(16200): ProcessProfilingInfo new_methods=0 is saved saved_to_disk=1
+I/MIUIInput(16200): [MotionEvent] ViewRootImpl windowName 'com.in5km.gotobed/com.in5km.gotobed.MainActivity', { action=ACTION_DOWN, id[0]=0, pointerCount=1, eventTime=777511179, downTime=777511179, phoneEventTime=15:58:07.325 } moveCount:0
+W/MirrorManager(16200): this model don't Support
+D/VRI[MainActivity](16200): getMiuiFreeformStackInfo mTmpFrames.miuiFreeFormStackInfo: null
+I/m.in5km.gotobed(16200): This is non sticky GC, maxfree is 8388608 minfree is 2097152
+W/FinalizerDaemon(16200): type=1400 audit(0.0:3413147): avc:  denied  { getopt } for  path="/dev/socket/usap_pool_primary" scontext=u:r:untrusted_app:s0:c198,c258,c512,c768 tcontext=u:r:zygote:s0 tclass=unix_stream_socket permissive=0 app=com.in5km.gotobed
+I/PowerHalMgrImpl(16200): perfLockAcq is supported. 
+I/PowerHalWrapper(16200): PowerHalWrapper.getInstance 
+E/m.in5km.gotobed(16200): legacy_receive_flag: 1
+D/m.in5km.gotobed(16200): /proc/perfmgr_sbe/sbe_ioctl not exists: No such file or directory
+I/PowerHalMgrImpl(16200): hdl:89988, pid:16200 
+I/MIUIInput(16200): [MotionEvent] ViewRootImpl windowName 'com.in5km.gotobed/com.in5km.gotobed.MainActivity', { action=ACTION_UP, id[0]=0, pointerCount=1, eventTime=777511290, downTime=777511179, phoneEventTime=15:58:07.436 } moveCount:3
+E/m.in5km.gotobed(16200): FrameInsert open fail: No such file or directory
+I/ScrollIdentify(16200): on fling
+I/PowerHalWrapper(16200): PowerHalWrapper.getInstance 
+I/PowerHalMgrImpl(16200): hdl:89993, pid:16200 
+D/CompatChangeReporter(16200): Compat change id reported: 351566728; UID 10710; state: ENABLED
+I/MIUIInput(16200): [MotionEvent] ViewRootImpl windowName 'com.in5km.gotobed/com.in5km.gotobed.MainActivity', { action=ACTION_DOWN, id[0]=0, pointerCount=1, eventTime=777512322, downTime=777512322, phoneEventTime=15:58:08.468 } moveCount:0
+D/VRI[MainActivity](16200): getMiuiFreeformStackInfo mTmpFrames.miuiFreeFormStackInfo: null
+I/MIUIInput(16200): [MotionEvent] ViewRootImpl windowName 'com.in5km.gotobed/com.in5km.gotobed.MainActivity', { action=ACTION_UP, id[0]=0, pointerCount=1, eventTime=777512421, downTime=777512322, phoneEventTime=15:58:08.567 } moveCount:0
+I/PowerHalMgrImpl(16200): hdl:89995, pid:16200 
+I/MIUIInput(16200): [MotionEvent] ViewRootImpl windowName 'com.in5km.gotobed/com.in5km.gotobed.MainActivity', { action=ACTION_DOWN, id[0]=0, pointerCount=1, eventTime=777513582, downTime=777513582, phoneEventTime=15:58:09.728 } moveCount:0
+D/VRI[MainActivity](16200): getMiuiFreeformStackInfo mTmpFrames.miuiFreeFormStackInfo: null
+I/MIUIInput(16200): [MotionEvent] ViewRootImpl windowName 'com.in5km.gotobed/com.in5km.gotobed.MainActivity', { action=ACTION_UP, id[0]=0, pointerCount=1, eventTime=777513664, downTime=777513582, phoneEventTime=15:58:09.810 } moveCount:0
+I/flutter (16200): 📢 [TEST NOTIFICATION] soundEnabled=true, soundProfile=ReminderSoundProfile.system, useVoice=false, voiceVariant=null, channelId=sleep_nudger_test_v3
+W/EpFrameworkFactory(16200): activated: false jar exist: false
+E/LB      (16200): fail to open file: No such file or directory
+I/PowerHalMgrImpl(16200): hdl:89997, pid:16200 
+I/MIUIInput(16200): [MotionEvent] ViewRootImpl windowName 'com.in5km.gotobed/com.in5km.gotobed.MainActivity', { action=ACTION_DOWN, id[0]=0, pointerCount=1, eventTime=777516643, downTime=777516643, phoneEventTime=15:58:12.789 } moveCount:0
+D/VRI[MainActivity](16200): getMiuiFreeformStackInfo mTmpFrames.miuiFreeFormStackInfo: null
+I/MIUIInput(16200): [MotionEvent] ViewRootImpl windowName 'com.in5km.gotobed/com.in5km.gotobed.MainActivity', { action=ACTION_UP, id[0]=0, pointerCount=1, eventTime=777516748, downTime=777516643, phoneEventTime=15:58:12.894 } moveCount:0
+I/flutter (16200): 📢 [TEST NOTIFICATION] soundEnabled=true, soundProfile=ReminderSoundProfile.system, useVoice=false, voiceVariant=null, channelId=sleep_nudger_test_v3
+I/PowerHalMgrImpl(16200): hdl:90000, pid:16200 

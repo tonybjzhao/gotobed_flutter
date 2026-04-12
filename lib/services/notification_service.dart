@@ -29,9 +29,9 @@ class NotificationService {
   final BedtimeMessageEngine _messageEngine = BedtimeMessageEngine();
   final Random _random = Random();
 
-  static const String _gentleDefaultChannelId = 'sleep_nudger_gentle_v3';
-  static const String _strongDefaultChannelId = 'sleep_nudger_strong_v3';
-  static const String _testDefaultChannelId = 'sleep_nudger_test_v3';
+  static const String _gentleDefaultChannelId = 'sleep_nudger_gentle_v4';
+  static const String _strongDefaultChannelId = 'sleep_nudger_strong_v4';
+  static const String _testDefaultChannelId = 'sleep_nudger_test_v4';
   static const List<String> _softVoiceSoundResources = <String>[
     'sleep_1',
     'sleep_2',
@@ -338,12 +338,9 @@ class NotificationService {
         'Gentle reminders',
         description: 'Calm reminders before bedtime.',
         importance: Importance.defaultImportance,
-        playSound: true,
-        sound: UriAndroidNotificationSound(
-            'content://settings/system/notification_sound'),
+        // sound: null → plugin uses RingtoneManager.getDefaultUri(TYPE_NOTIFICATION)
       ),
     );
-    debugPrint('📢 [CHANNELS] Created: $_gentleDefaultChannelId (playSound=true)');
 
     await androidImplementation?.createNotificationChannel(
       const AndroidNotificationChannel(
@@ -351,12 +348,9 @@ class NotificationService {
         'Bedtime reminders',
         description: 'Stronger nudges when bedtime arrives.',
         importance: Importance.high,
-        playSound: true,
-        sound: UriAndroidNotificationSound(
-            'content://settings/system/notification_sound'),
+        // sound: null → plugin uses RingtoneManager.getDefaultUri(TYPE_NOTIFICATION)
       ),
     );
-    debugPrint('📢 [CHANNELS] Created: $_strongDefaultChannelId (playSound=true)');
 
     await androidImplementation?.createNotificationChannel(
       const AndroidNotificationChannel(
@@ -364,12 +358,19 @@ class NotificationService {
         'Test reminder',
         description: 'Manual test reminder with sound.',
         importance: Importance.max,
-        playSound: true,
-        sound: UriAndroidNotificationSound(
-            'content://settings/system/notification_sound'),
+        // sound: null → plugin uses RingtoneManager.getDefaultUri(TYPE_NOTIFICATION)
       ),
     );
-    debugPrint('📢 [CHANNELS] Created: $_testDefaultChannelId (playSound=true)');
+
+    // Read back channels to confirm sound was stored
+    final channels = await androidImplementation?.getNotificationChannels();
+    for (final ch in channels ?? []) {
+      if (ch.id == _testDefaultChannelId ||
+          ch.id == _gentleDefaultChannelId ||
+          ch.id == _strongDefaultChannelId) {
+        debugPrint('📢 [CHANNEL READBACK] id=${ch.id}, playSound=${ch.playSound}, sound=${ch.sound}');
+      }
+    }
 
     for (var i = 0; i < _softVoiceSoundResources.length; i++) {
       final variant = i + 1;
@@ -581,7 +582,7 @@ class NotificationService {
     final stage = test
         ? 'test'
         : (strong ? 'strong' : 'gentle');
-    return 'sleep_nudger_${stage}_v2_voice_$variant';
+    return 'sleep_nudger_${stage}_v3_voice_$variant';
   }
 
   int _notificationId(String nightId, int slot) {
