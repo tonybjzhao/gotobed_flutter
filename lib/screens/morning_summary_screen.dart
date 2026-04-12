@@ -104,7 +104,7 @@ class MorningSummaryScreen extends StatelessWidget {
               _ShareCard(
                 title: shareTitle,
                 body: copy.shareText,
-                onCopy: () => _copyShareText(context, copy.shareText),
+                onPreview: () => _showSharePreview(context, copy.shareText),
               ),
               const Spacer(),
               PrimaryButton(label: 'Continue', onPressed: onContinue),
@@ -120,9 +120,112 @@ class MorningSummaryScreen extends StatelessWidget {
     if (!context.mounted) {
       return;
     }
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Progress note copied')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Copied: ${text.split('\n').first}',
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showSharePreview(BuildContext context, String text) {
+    return showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF211B2A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (BuildContext sheetContext) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF5D516A),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Progress note',
+                style: Theme.of(sheetContext).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'This is what will be copied:',
+                style: Theme.of(sheetContext).textTheme.bodyMedium?.copyWith(
+                  color: const Color(0xFFCBB9A6),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF18131F),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0x33F2B36F)),
+                ),
+                child: Text(
+                  text,
+                  style: Theme.of(sheetContext).textTheme.bodyLarge?.copyWith(
+                    color: const Color(0xFFF4EEE8),
+                    height: 1.5,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(sheetContext).pop(),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFFCBB9A6),
+                        side: const BorderSide(color: Color(0x335D516A)),
+                        minimumSize: const Size.fromHeight(52),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text('Close'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () async {
+                        Navigator.of(sheetContext).pop();
+                        await _copyShareText(context, text);
+                      },
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(52),
+                        backgroundColor: const Color(0xFFF2B36F),
+                        foregroundColor: const Color(0xFF2B1802),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text('Copy'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -130,12 +233,12 @@ class _ShareCard extends StatelessWidget {
   const _ShareCard({
     required this.title,
     required this.body,
-    required this.onCopy,
+    required this.onPreview,
   });
 
   final String title;
   final String body;
-  final Future<void> Function() onCopy;
+  final Future<void> Function() onPreview;
 
   @override
   Widget build(BuildContext context) {
@@ -176,7 +279,7 @@ class _ShareCard extends StatelessWidget {
           Align(
             alignment: Alignment.centerLeft,
             child: OutlinedButton(
-              onPressed: onCopy,
+              onPressed: onPreview,
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Color(0x55F2B36F)),
                 foregroundColor: const Color(0xFFF2B36F),
@@ -188,7 +291,7 @@ class _ShareCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              child: const Text('Copy progress note'),
+              child: const Text('Preview progress note'),
             ),
           ),
         ],
