@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../domain/bedtime/bedtime_controller.dart';
 import '../models/app_settings.dart';
@@ -34,6 +35,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late BedtimeController _controller;
+  bool _isConfirmingBedtime = false;
 
   @override
   void initState() {
@@ -54,6 +56,10 @@ class _HomeScreenState extends State<HomeScreen> {
             widget.settings.reminderLeadMinutes) {
       _controller = _buildController();
     }
+
+    if (widget.currentNight.confirmedAt != null && _isConfirmingBedtime) {
+      _isConfirmingBedtime = false;
+    }
   }
 
   BedtimeController _buildController() {
@@ -72,6 +78,8 @@ class _HomeScreenState extends State<HomeScreen> {
       context,
     ).formatTimeOfDay(widget.settings.bedtime);
     final copy = _controller.tonightCopy;
+    final ritualMode =
+        _isConfirmingBedtime || widget.currentNight.confirmedAt != null;
 
     return Scaffold(
       appBar: AppBar(
@@ -84,78 +92,98 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-          children: <Widget>[
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 280),
-              switchInCurve: Curves.easeOut,
-              switchOutCurve: Curves.easeIn,
-              transitionBuilder: _fadeSlideTransition,
-              child: Text(
-                copy.title,
-                key: ValueKey<String>(copy.title),
-                style: Theme.of(
-                  context,
-                ).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w700),
-              ),
-            ),
-            const SizedBox(height: 10),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 280),
-              switchInCurve: Curves.easeOut,
-              switchOutCurve: Curves.easeIn,
-              transitionBuilder: _fadeSlideTransition,
-              child: Text(
-                copy.subtitle,
-                key: ValueKey<String>(copy.subtitle),
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: const Color(0xFFCBB9A6),
-                  height: 1.5,
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            BedtimeStatusCard(
-              bedtimeLabel: bedtimeText,
-              nextReminderLabel: nextReminderText,
-              streakFeedback: _asLegacyStreakFeedback(),
-            ),
-            const SizedBox(height: 16),
-            InfoCard(title: 'Tonight’s plan', subtitle: copy.tonightPlan),
-            const SizedBox(height: 24),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 320),
-              switchInCurve: Curves.easeOut,
-              switchOutCurve: Curves.easeIn,
-              transitionBuilder: _fadeSlideTransition,
-              child: PrimaryButton(
-                key: ValueKey<String>(copy.cta),
-                label: copy.cta,
-                onPressed: copy.ctaEnabled ? widget.onConfirmBedtime : null,
-              ),
-            ),
-            if (widget.isReminderActive) ...<Widget>[
-              const SizedBox(height: 12),
-              OutlinedButton(
-                onPressed: widget.currentNight.snoozeCount >= 3
-                    ? null
-                    : widget.onSnooze,
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(54),
-                  side: const BorderSide(color: Color(0xFF5D516A)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 320),
+          color: ritualMode ? const Color(0x0DFFFFFF) : Colors.transparent,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+            children: <Widget>[
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 280),
+                switchInCurve: Curves.easeOut,
+                switchOutCurve: Curves.easeIn,
+                transitionBuilder: _fadeSlideTransition,
+                child: Text(
+                  copy.title,
+                  key: ValueKey<String>(copy.title),
+                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
+              ),
+              const SizedBox(height: 10),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 280),
+                switchInCurve: Curves.easeOut,
+                switchOutCurve: Curves.easeIn,
+                transitionBuilder: _fadeSlideTransition,
                 child: Text(
-                  widget.currentNight.snoozeCount >= 3
-                      ? 'Snooze limit reached'
-                      : 'Snooze 10 min',
+                  copy.subtitle,
+                  key: ValueKey<String>(copy.subtitle),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: const Color(0xFFCBB9A6),
+                    height: 1.5,
+                  ),
                 ),
               ),
+              const SizedBox(height: 24),
+              AnimatedSlide(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut,
+                offset: ritualMode ? const Offset(0, 0.02) : Offset.zero,
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 300),
+                  opacity: ritualMode ? 0.94 : 1,
+                  child: Column(
+                    children: <Widget>[
+                      BedtimeStatusCard(
+                        bedtimeLabel: bedtimeText,
+                        nextReminderLabel: nextReminderText,
+                        streakFeedback: _asLegacyStreakFeedback(),
+                      ),
+                      const SizedBox(height: 16),
+                      InfoCard(
+                        title: 'Tonight’s plan',
+                        subtitle: copy.tonightPlan,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 320),
+                switchInCurve: Curves.easeOut,
+                switchOutCurve: Curves.easeIn,
+                transitionBuilder: _fadeSlideTransition,
+                child: PrimaryButton(
+                  key: ValueKey<String>(copy.cta),
+                  label: _isConfirmingBedtime ? 'Settling in...' : copy.cta,
+                  onPressed: copy.ctaEnabled ? _handlePrimaryAction : null,
+                ),
+              ),
+              if (widget.isReminderActive && !ritualMode) ...<Widget>[
+                const SizedBox(height: 12),
+                OutlinedButton(
+                  onPressed: widget.currentNight.snoozeCount >= 3
+                      ? null
+                      : widget.onSnooze,
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(54),
+                    side: const BorderSide(color: Color(0xFF5D516A)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                  ),
+                  child: Text(
+                    widget.currentNight.snoozeCount >= 3
+                        ? 'Snooze limit reached'
+                        : 'Snooze 10 min',
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -184,6 +212,28 @@ class _HomeScreenState extends State<HomeScreen> {
       opacity: animation,
       child: SlideTransition(position: position, child: child),
     );
+  }
+
+  Future<void> _handlePrimaryAction() async {
+    if (_isConfirmingBedtime || !_controller.tonightCopy.ctaEnabled) {
+      return;
+    }
+
+    await HapticFeedback.lightImpact();
+    if (mounted) {
+      setState(() {
+        _isConfirmingBedtime = true;
+      });
+    }
+
+    await Future<void>.delayed(const Duration(milliseconds: 280));
+    await widget.onConfirmBedtime();
+
+    if (mounted && widget.currentNight.confirmedAt == null) {
+      setState(() {
+        _isConfirmingBedtime = false;
+      });
+    }
   }
 
   StreakFeedback _asLegacyStreakFeedback() {
