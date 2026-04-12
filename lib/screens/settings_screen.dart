@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -206,6 +207,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
               height: 1.4,
             ),
           ),
+          if (_iosSoundHint != null) ...<Widget>[
+            const SizedBox(height: 8),
+            Text(
+              _iosSoundHint!,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: const Color(0xFFCBB9A6),
+                height: 1.4,
+              ),
+            ),
+          ],
           const SizedBox(height: 4),
           Align(
             alignment: Alignment.centerLeft,
@@ -279,6 +290,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   bool _isLikelyAfternoonBedtime(TimeOfDay time) {
     return time.period == DayPeriod.pm && time.hour >= 12 && time.hour < 18;
+  }
+
+  String? get _iosSoundHint {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) {
+      return null;
+    }
+
+    return 'On iPhone, if reminders are silent, check Focus mode, the hardware silent switch, and notification sounds for GoToBed in iOS Settings.';
   }
 
   Future<void> _sendTestNotification() async {
