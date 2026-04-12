@@ -17,14 +17,20 @@ const List<MorningSummaryCopy> _successCopies = <MorningSummaryCopy>[
   MorningSummaryCopy(
     title: 'You did it.',
     subtitle: 'That felt different, didn’t it?',
+    reflection: 'You kept your word to yourself last night.',
+    shareText: 'I went to bed on time last night with Sleep Nudger.',
   ),
   MorningSummaryCopy(
     title: 'You went to bed on time.',
     subtitle: 'A calmer night starts to become a pattern.',
+    reflection: 'A good stop last night can make the next one easier.',
+    shareText: 'Another on-time night in the books with Sleep Nudger.',
   ),
   MorningSummaryCopy(
     title: 'That was a good stop.',
     subtitle: 'Keep the rhythm going again tonight.',
+    reflection: 'That kind of night adds up faster than it seems.',
+    shareText: 'I kept the late-night scrolling shorter last night.',
   ),
 ];
 
@@ -32,13 +38,19 @@ const List<MorningSummaryCopy> _failureCopies = <MorningSummaryCopy>[
   MorningSummaryCopy(
     title: 'It happens.',
     subtitle: 'No guilt. Try again tonight.',
+    reflection: 'Coming back tonight still counts as progress.',
+    shareText: 'Resetting tonight. One late night does not cancel the goal.',
   ),
   MorningSummaryCopy(
     title: 'Last night ran late.',
     subtitle: 'One late night does not undo your progress.',
+    reflection: 'You are still building this, even on the uneven nights.',
+    shareText: 'Last night ran late, but tonight is still a fresh start.',
   ),
   MorningSummaryCopy(
     title: 'A reset is still progress.',
     subtitle: 'Tonight is a fresh start.',
+    reflection: 'A softer restart is better than giving up on the rhythm.',
+    shareText: 'Starting again tonight. Sleep Nudger is keeping it gentle.',
   ),
 ];
