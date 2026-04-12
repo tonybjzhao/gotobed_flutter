@@ -71,11 +71,14 @@ class HomeScreen extends StatelessWidget {
               streakFeedback: streakFeedback,
             ),
             const SizedBox(height: 16),
-            InfoCard(title: 'Tonight’s tone', subtitle: _toneDescription()),
+            InfoCard(
+              title: 'Tonight’s plan',
+              subtitle: _tonightPlanDescription(),
+            ),
             const SizedBox(height: 24),
             PrimaryButton(
               label: bedtimeConfirmed
-                  ? 'Bedtime confirmed'
+                  ? 'All set for tonight'
                   : 'I’m going to bed',
               onPressed: bedtimeConfirmed ? null : onConfirmBedtime,
             ),
@@ -105,7 +108,7 @@ class HomeScreen extends StatelessWidget {
 
   String _nextReminderLabel(BuildContext context) {
     if (currentNight.confirmedAt != null) {
-      return 'Bedtime confirmed';
+      return 'All set';
     }
     if (isReminderActive) {
       return 'Reminder active now';
@@ -116,10 +119,13 @@ class HomeScreen extends StatelessWidget {
     return localizations.formatTimeOfDay(time);
   }
 
-  String _toneDescription() {
-    if (settings.gentleReminderEnabled) {
-      return 'Each night can sound a little different, starting soft and getting clearer near bedtime.';
+  String _tonightPlanDescription() {
+    if (currentNight.confirmedAt != null) {
+      return 'You are set for tonight. We will hold off on more bedtime nudges.';
     }
-    return 'Bedtime nudges stay simple and direct when it is time to put the phone down.';
+    if (settings.gentleReminderEnabled) {
+      return 'We will start with a gentle reminder before bedtime, then follow up more clearly if you are still up.';
+    }
+    return 'A direct bedtime nudge is set for tonight when it is time to put the phone down.';
   }
 }
