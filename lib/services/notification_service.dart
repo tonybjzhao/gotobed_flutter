@@ -300,11 +300,6 @@ class NotificationService {
         priority: Priority.max,
         playSound: soundEnabled,
         enableVibration: soundEnabled,
-        sound: useVoice
-            ? RawResourceAndroidNotificationSound(
-                _softVoiceSoundResources[voiceVariantIndex!],
-              )
-            : null,
       ),
       iOS: DarwinNotificationDetails(
         presentAlert: true,
@@ -347,6 +342,7 @@ class NotificationService {
         'Gentle reminders',
         description: 'Calm reminders before bedtime.',
         importance: Importance.defaultImportance,
+        playSound: true,
       ),
     );
 
@@ -356,6 +352,7 @@ class NotificationService {
         'Bedtime reminders',
         description: 'Stronger nudges when bedtime arrives.',
         importance: Importance.high,
+        playSound: true,
       ),
     );
 
@@ -447,11 +444,6 @@ class NotificationService {
         priority: strong ? Priority.high : Priority.defaultPriority,
         playSound: soundEnabled,
         enableVibration: soundEnabled,
-        sound: voiceSoundEnabled
-            ? RawResourceAndroidNotificationSound(
-                _softVoiceSoundResources[voiceVariantIndex!],
-              )
-            : null,
       ),
       iOS: DarwinNotificationDetails(
         presentAlert: true,
@@ -566,7 +558,7 @@ class NotificationService {
   }
 
   String _iosSoundFileName(int variant) {
-    return 'sleep_$variant.wav';
+    return 'sleep_$variant';
   }
 
   String _voiceChannelId({
