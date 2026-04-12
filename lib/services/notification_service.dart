@@ -287,6 +287,12 @@ class NotificationService {
     final voiceVariantIndex = useVoice ? _voiceVariantForSchedule() : null;
     final voiceVariant = voiceVariantIndex == null ? null : voiceVariantIndex + 1;
 
+    String channelId = useVoice
+        ? _voiceChannelId(strong: true, test: true, variant: voiceVariant!)
+        : _testDefaultChannelId;
+    
+    debugPrint('📢 [TEST NOTIFICATION] soundEnabled=$soundEnabled, soundProfile=$soundProfile, useVoice=$useVoice, voiceVariant=$voiceVariant, channelId=$channelId');
+
     final details = NotificationDetails(
       android: AndroidNotificationDetails(
       useVoice
@@ -336,6 +342,8 @@ class NotificationService {
           AndroidFlutterLocalNotificationsPlugin
         >();
 
+    debugPrint('📢 [CHANNELS] Creating notification channels for Android');
+
     await androidImplementation?.createNotificationChannel(
       const AndroidNotificationChannel(
         _gentleDefaultChannelId,
@@ -345,6 +353,7 @@ class NotificationService {
         playSound: true,
       ),
     );
+    debugPrint('📢 [CHANNELS] Created: $_gentleDefaultChannelId (playSound=true)');
 
     await androidImplementation?.createNotificationChannel(
       const AndroidNotificationChannel(
@@ -355,6 +364,7 @@ class NotificationService {
         playSound: true,
       ),
     );
+    debugPrint('📢 [CHANNELS] Created: $_strongDefaultChannelId (playSound=true)');
 
     await androidImplementation?.createNotificationChannel(
       const AndroidNotificationChannel(
@@ -365,6 +375,7 @@ class NotificationService {
         playSound: true,
       ),
     );
+    debugPrint('📢 [CHANNELS] Created: $_testDefaultChannelId (playSound=true)');
 
     for (var i = 0; i < _softVoiceSoundResources.length; i++) {
       final variant = i + 1;
@@ -380,6 +391,7 @@ class NotificationService {
           sound: RawResourceAndroidNotificationSound(soundName),
         ),
       );
+      debugPrint('📢 [CHANNELS] Created: ${_voiceChannelId(strong: false, test: false, variant: variant)} (sound=$soundName)');
 
       await androidImplementation?.createNotificationChannel(
         AndroidNotificationChannel(
@@ -392,6 +404,7 @@ class NotificationService {
           sound: RawResourceAndroidNotificationSound(soundName),
         ),
       );
+      debugPrint('📢 [CHANNELS] Created: ${_voiceChannelId(strong: true, test: false, variant: variant)} (sound=$soundName)');
 
       await androidImplementation?.createNotificationChannel(
         AndroidNotificationChannel(
@@ -403,6 +416,7 @@ class NotificationService {
           sound: RawResourceAndroidNotificationSound(soundName),
         ),
       );
+      debugPrint('📢 [CHANNELS] Created: ${_voiceChannelId(strong: true, test: true, variant: variant)} (sound=$soundName)');
     }
   }
 
