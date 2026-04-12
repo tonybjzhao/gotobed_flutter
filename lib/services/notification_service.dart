@@ -98,38 +98,77 @@ class NotificationService {
       return;
     }
 
-    final gentleAt = night.gentleReminderAt;
-    if (settings.gentleReminderEnabled &&
-        gentleAt != null &&
-        gentleAt.isAfter(now)) {
-      final gentleMessage = _messageEngine.selectMessageForTone(
-        BedtimeTone.gentle,
-      );
-      await _scheduleNotification(
-        id: _notificationId(night.nightId, 1),
-        title: gentleMessage.title,
-        body: gentleMessage.subtitle ?? 'A gentle nudge before bedtime.',
-        when: gentleAt,
-        strong: false,
-        soundEnabled: settings.soundVibrationEnabled,
-        payload: _payloadFor(night.nightId, 'gentle'),
-      );
+    await scheduleGentleReminder(settings: settings, night: night, now: now);
+    await scheduleBedtimeReminder(settings: settings, night: night, now: now);
+  }
+
+  Future<void> rescheduleFromSettings({
+    required AppSettings settings,
+    required NightlyResult upcomingNight,
+    required DateTime now,
+  }) async {
+    await scheduleNightPlan(settings: settings, night: upcomingNight, now: now);
+  }
+
+  Future<void> scheduleGentleReminder({
+    required AppSettings settings,
+    required NightlyResult night,
+    required DateTime now,
+  }) async {
+    if (!_supportsNotifications) {
+      return;
     }
 
-    if (night.strongReminderAt.isAfter(now)) {
-      final bedtimeMessage = _messageEngine.selectMessageForTone(
-        BedtimeTone.neutral,
-      );
-      await _scheduleNotification(
-        id: _notificationId(night.nightId, 2),
-        title: bedtimeMessage.title,
-        body: bedtimeMessage.subtitle ?? 'Tonight can still end well.',
-        when: night.strongReminderAt,
-        strong: true,
-        soundEnabled: settings.soundVibrationEnabled,
-        payload: _payloadFor(night.nightId, 'strong'),
-      );
+    await initialize();
+
+    final gentleAt = night.gentleReminderAt;
+    if (!settings.gentleReminderEnabled ||
+        gentleAt == null ||
+        !gentleAt.isAfter(now)) {
+      return;
     }
+
+    final gentleMessage = _messageEngine.selectMessageForTone(
+      BedtimeTone.gentle,
+    );
+    await _scheduleNotification(
+      id: _notificationId(night.nightId, 1),
+      title: gentleMessage.title,
+      body: gentleMessage.subtitle ?? 'A gentle nudge before bedtime.',
+      when: gentleAt,
+      strong: false,
+      soundEnabled: settings.soundVibrationEnabled,
+      payload: _payloadFor(night.nightId, 'gentle'),
+    );
+  }
+
+  Future<void> scheduleBedtimeReminder({
+    required AppSettings settings,
+    required NightlyResult night,
+    required DateTime now,
+  }) async {
+    if (!_supportsNotifications) {
+      return;
+    }
+
+    await initialize();
+
+    if (!night.strongReminderAt.isAfter(now)) {
+      return;
+    }
+
+    final bedtimeMessage = _messageEngine.selectMessageForTone(
+      BedtimeTone.neutral,
+    );
+    await _scheduleNotification(
+      id: _notificationId(night.nightId, 2),
+      title: bedtimeMessage.title,
+      body: bedtimeMessage.subtitle ?? 'Tonight can still end well.',
+      when: night.strongReminderAt,
+      strong: true,
+      soundEnabled: settings.soundVibrationEnabled,
+      payload: _payloadFor(night.nightId, 'strong'),
+    );
   }
 
   Future<void> scheduleSnoozeReminder({
@@ -172,6 +211,10 @@ class NotificationService {
     await _plugin.cancel(id: _notificationId(nightId, 1));
     await _plugin.cancel(id: _notificationId(nightId, 2));
     await _plugin.cancel(id: _notificationId(nightId, 3));
+  }
+
+  Future<void> cancelTonightReminders(NightlyResult night) {
+    return cancelNightNotifications(night.nightId);
   }
 
   Future<void> _createChannels() async {

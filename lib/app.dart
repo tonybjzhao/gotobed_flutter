@@ -223,7 +223,7 @@ class _SleepNudgerRootState extends State<SleepNudgerRoot> {
       DateTime.now(),
     );
     await _storageService.saveNightlyResult(updatedNight);
-    await _notificationService.cancelNightNotifications(updatedNight.nightId);
+    await _notificationService.cancelTonightReminders(updatedNight);
     await _refreshState();
   }
 
