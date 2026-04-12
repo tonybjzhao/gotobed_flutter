@@ -29,9 +29,9 @@ class NotificationService {
   final BedtimeMessageEngine _messageEngine = BedtimeMessageEngine();
   final Random _random = Random();
 
-  static const String _gentleDefaultChannelId = 'sleep_nudger_gentle';
-  static const String _strongDefaultChannelId = 'sleep_nudger_strong';
-  static const String _testDefaultChannelId = 'sleep_nudger_test';
+  static const String _gentleDefaultChannelId = 'sleep_nudger_gentle_v2';
+  static const String _strongDefaultChannelId = 'sleep_nudger_strong_v2';
+  static const String _testDefaultChannelId = 'sleep_nudger_test_v2';
   static const List<String> _softVoiceSoundResources = <String>[
     'sleep_1',
     'sleep_2',
@@ -281,13 +281,12 @@ class NotificationService {
 
     await initialize();
 
-    final when = DateTime.now().add(const Duration(seconds: 5));
     final useVoice =
       soundEnabled && soundProfile == ReminderSoundProfile.softVoice;
     final voiceVariantIndex = useVoice ? _voiceVariantForSchedule() : null;
     final voiceVariant = voiceVariantIndex == null ? null : voiceVariantIndex + 1;
 
-    String channelId = useVoice
+    final channelId = useVoice
         ? _voiceChannelId(strong: true, test: true, variant: voiceVariant!)
         : _testDefaultChannelId;
     
@@ -295,9 +294,7 @@ class NotificationService {
 
     final details = NotificationDetails(
       android: AndroidNotificationDetails(
-      useVoice
-        ? _voiceChannelId(strong: true, test: true, variant: voiceVariant!)
-        : _testDefaultChannelId,
+        channelId,
         useVoice ? 'Test reminder (voice)' : 'Test reminder',
         channelDescription: useVoice
             ? 'Test reminder with soft voice sound.'
@@ -315,23 +312,12 @@ class NotificationService {
       ),
     );
 
-    final fallbackDetails = NotificationDetails(
-      android: details.android,
-      iOS: DarwinNotificationDetails(
-        presentAlert: true,
-        presentSound: soundEnabled,
-        presentBadge: false,
-      ),
-    );
-
-    await _zonedScheduleWithIosFallback(
+    // Use show() for instant delivery — no need to background the app.
+    await _plugin.show(
       id: 999001,
       title: 'GoToBed test',
-      body: 'This is a test notification to confirm Android delivery.',
-      scheduledDate: tz.TZDateTime.from(when, tz.local),
+      body: useVoice ? 'Testing soft voice reminder 🌙' : 'Testing notification sound 🔔',
       notificationDetails: details,
-      fallbackNotificationDetails: fallbackDetails,
-      androidScheduleMode: await _safeScheduleMode(preferExact: true),
       payload: _payloadFor('test', 'manual'),
     );
   }
@@ -583,7 +569,7 @@ class NotificationService {
     final stage = test
         ? 'test'
         : (strong ? 'strong' : 'gentle');
-    return 'sleep_nudger_${stage}_voice_$variant';
+    return 'sleep_nudger_${stage}_v2_voice_$variant';
   }
 
   int _notificationId(String nightId, int slot) {
