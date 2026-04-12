@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -24,14 +25,18 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
   final BedtimeMessageEngine _messageEngine = BedtimeMessageEngine();
+  final Random _random = Random();
 
   static const String _gentleDefaultChannelId = 'sleep_nudger_gentle';
   static const String _strongDefaultChannelId = 'sleep_nudger_strong';
-  static const String _gentleVoiceChannelId = 'sleep_nudger_gentle_voice';
-  static const String _strongVoiceChannelId = 'sleep_nudger_strong_voice';
   static const String _testDefaultChannelId = 'sleep_nudger_test';
-  static const String _testVoiceChannelId = 'sleep_nudger_test_voice';
-  static const String _softVoiceSoundResource = 'soft_bedtime_voice';
+  static const List<String> _softVoiceSoundResources = <String>[
+    'sleep_1',
+    'sleep_2',
+    'sleep_3',
+    'sleep_4',
+    'sleep_5',
+  ];
 
   bool _initialized = false;
 
@@ -275,11 +280,15 @@ class NotificationService {
     await initialize();
 
     final when = DateTime.now().add(const Duration(seconds: 5));
-    final useVoice = soundEnabled && soundProfile == ReminderSoundProfile.softVoice;
+    final useVoice =
+      soundEnabled && soundProfile == ReminderSoundProfile.softVoice;
+    final voiceVariant = useVoice ? _voiceVariantForSchedule() : null;
 
     final details = NotificationDetails(
       android: AndroidNotificationDetails(
-        useVoice ? _testVoiceChannelId : _testDefaultChannelId,
+      useVoice
+        ? _voiceChannelId(strong: true, test: true, variant: voiceVariant!)
+        : _testDefaultChannelId,
         useVoice ? 'Test reminder (voice)' : 'Test reminder',
         channelDescription: useVoice
             ? 'Test reminder with soft voice sound.'
@@ -289,8 +298,8 @@ class NotificationService {
         playSound: soundEnabled,
         enableVibration: soundEnabled,
         sound: useVoice
-            ? const RawResourceAndroidNotificationSound(
-                _softVoiceSoundResource,
+            ? RawResourceAndroidNotificationSound(
+                _softVoiceSoundResources[voiceVariant!],
               )
             : null,
       ),
@@ -338,28 +347,6 @@ class NotificationService {
 
     await androidImplementation?.createNotificationChannel(
       const AndroidNotificationChannel(
-        _gentleVoiceChannelId,
-        'Gentle reminders (voice)',
-        description: 'Calm reminders before bedtime with a soft voice.',
-        importance: Importance.defaultImportance,
-        playSound: true,
-        sound: RawResourceAndroidNotificationSound(_softVoiceSoundResource),
-      ),
-    );
-
-    await androidImplementation?.createNotificationChannel(
-      const AndroidNotificationChannel(
-        _strongVoiceChannelId,
-        'Bedtime reminders (voice)',
-        description: 'Stronger nudges when bedtime arrives with a soft voice.',
-        importance: Importance.high,
-        playSound: true,
-        sound: RawResourceAndroidNotificationSound(_softVoiceSoundResource),
-      ),
-    );
-
-    await androidImplementation?.createNotificationChannel(
-      const AndroidNotificationChannel(
         _testDefaultChannelId,
         'Test reminder',
         description: 'Manual test reminder with sound.',
@@ -368,16 +355,44 @@ class NotificationService {
       ),
     );
 
-    await androidImplementation?.createNotificationChannel(
-      const AndroidNotificationChannel(
-        _testVoiceChannelId,
-        'Test reminder (voice)',
-        description: 'Manual test reminder with soft voice sound.',
-        importance: Importance.max,
-        playSound: true,
-        sound: RawResourceAndroidNotificationSound(_softVoiceSoundResource),
-      ),
-    );
+    for (var i = 0; i < _softVoiceSoundResources.length; i++) {
+      final variant = i + 1;
+      final soundName = _softVoiceSoundResources[i];
+
+      await androidImplementation?.createNotificationChannel(
+        AndroidNotificationChannel(
+          _voiceChannelId(strong: false, test: false, variant: variant),
+          'Gentle reminders (voice $variant)',
+          description: 'Calm reminders before bedtime with soft voice $variant.',
+          importance: Importance.defaultImportance,
+          playSound: true,
+          sound: RawResourceAndroidNotificationSound(soundName),
+        ),
+      );
+
+      await androidImplementation?.createNotificationChannel(
+        AndroidNotificationChannel(
+          _voiceChannelId(strong: true, test: false, variant: variant),
+          'Bedtime reminders (voice $variant)',
+          description:
+              'Stronger nudges when bedtime arrives with soft voice $variant.',
+          importance: Importance.high,
+          playSound: true,
+          sound: RawResourceAndroidNotificationSound(soundName),
+        ),
+      );
+
+      await androidImplementation?.createNotificationChannel(
+        AndroidNotificationChannel(
+          _voiceChannelId(strong: true, test: true, variant: variant),
+          'Test reminder (voice $variant)',
+          description: 'Manual test reminder with soft voice $variant.',
+          importance: Importance.max,
+          playSound: true,
+          sound: RawResourceAndroidNotificationSound(soundName),
+        ),
+      );
+    }
   }
 
   Future<void> _scheduleNotification({
@@ -390,10 +405,15 @@ class NotificationService {
     required ReminderSoundProfile soundProfile,
     required String payload,
   }) async {
+    final voiceVariant = soundEnabled && soundProfile == ReminderSoundProfile.softVoice
+        ? _voiceVariantForSchedule()
+        : null;
+
     final channelId = _channelIdFor(
       strong: strong,
       soundEnabled: soundEnabled,
       soundProfile: soundProfile,
+      voiceVariant: voiceVariant,
     );
 
     final voiceSoundEnabled =
@@ -411,8 +431,8 @@ class NotificationService {
         playSound: soundEnabled,
         enableVibration: soundEnabled,
         sound: voiceSoundEnabled
-            ? const RawResourceAndroidNotificationSound(
-                _softVoiceSoundResource,
+            ? RawResourceAndroidNotificationSound(
+                _softVoiceSoundResources[voiceVariant!],
               )
             : null,
       ),
@@ -438,12 +458,32 @@ class NotificationService {
     required bool strong,
     required bool soundEnabled,
     required ReminderSoundProfile soundProfile,
+    required int? voiceVariant,
   }) {
     if (!soundEnabled || soundProfile == ReminderSoundProfile.system) {
       return strong ? _strongDefaultChannelId : _gentleDefaultChannelId;
     }
 
-    return strong ? _strongVoiceChannelId : _gentleVoiceChannelId;
+    return _voiceChannelId(
+      strong: strong,
+      test: false,
+      variant: (voiceVariant ?? 0) + 1,
+    );
+  }
+
+  int _voiceVariantForSchedule() {
+    return _random.nextInt(_softVoiceSoundResources.length);
+  }
+
+  String _voiceChannelId({
+    required bool strong,
+    required bool test,
+    required int variant,
+  }) {
+    final stage = test
+        ? 'test'
+        : (strong ? 'strong' : 'gentle');
+    return 'sleep_nudger_${stage}_voice_$variant';
   }
 
   int _notificationId(String nightId, int slot) {
