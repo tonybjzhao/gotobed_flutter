@@ -124,7 +124,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           physics: const BouncingScrollPhysics(
             parent: AlwaysScrollableScrollPhysics(),
           ),
-          padding: EdgeInsets.fromLTRB(20, 8, 20, 32 + bottomPadding),
+          padding: EdgeInsets.fromLTRB(20, 10, 20, 40 + bottomPadding),
           children: <Widget>[
             _SettingsSection(
               title: 'Bedtime',
@@ -148,7 +148,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
             ],
-            const SizedBox(height: 18),
+            const SizedBox(height: 24),
             _SettingsSection(
               title: 'Reminder',
               children: <Widget>[
@@ -180,13 +180,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       _gentleReminderEnabled = value;
                     });
                   },
-                  contentPadding: EdgeInsets.zero,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 2),
+                  visualDensity: VisualDensity.standard,
                   title: const Text('Gentle reminder'),
                   subtitle: const Text('Start softly before bedtime.'),
                 ),
               ],
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 24),
             _SettingsSection(
               title: 'Sound',
               children: <Widget>[
@@ -197,7 +198,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       _soundVibrationEnabled = value;
                     });
                   },
-                  contentPadding: EdgeInsets.zero,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 2),
+                  visualDensity: VisualDensity.standard,
                   title: const Text('Sound and vibration'),
                   subtitle: const Text(
                     'Add sound and haptics to bedtime nudges.',
@@ -229,7 +231,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Text(
               'If reminders arrive late on some Android phones, disable battery optimization for GoToBed.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -544,7 +546,7 @@ class _SettingsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          padding: const EdgeInsets.only(left: 6, bottom: 10),
           child: Text(
             title,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
@@ -557,13 +559,13 @@ class _SettingsSection extends StatelessWidget {
         DecoratedBox(
           decoration: BoxDecoration(
             color: const Color(0xFF211B2A),
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: const Color(0xFFCBB9A6).withValues(alpha: 0.07),
+              color: const Color(0xFFCBB9A6).withValues(alpha: 0.055),
             ),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 7),
             child: Column(children: children),
           ),
         ),
@@ -580,7 +582,7 @@ class _SettingsDivider extends StatelessWidget {
     return Divider(
       height: 1,
       thickness: 1,
-      color: const Color(0xFFCBB9A6).withValues(alpha: 0.11),
+      color: const Color(0xFFCBB9A6).withValues(alpha: 0.075),
     );
   }
 }
@@ -602,26 +604,28 @@ class _SettingsTile extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
       child: Ink(
-        padding: const EdgeInsets.symmetric(vertical: 15),
-        child: Row(
-          children: <Widget>[
-            Text(label),
-            const Spacer(),
-            Text(
-              value,
-              style: const TextStyle(
-                color: Color(0xFFF2B36F),
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 58),
+          child: Row(
+            children: <Widget>[
+              Text(label),
+              const Spacer(),
+              Text(
+                value,
+                style: const TextStyle(
+                  color: Color(0xFFF2B36F),
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0,
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            const Icon(
-              Icons.chevron_right_rounded,
-              size: 20,
-              color: Color(0x997C7188),
-            ),
-          ],
+              const SizedBox(width: 8),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 20,
+                color: Color(0x887C7188),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -653,8 +657,8 @@ class _SettingsDropdown<T> extends StatelessWidget {
       letterSpacing: 0,
     );
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 58),
       child: Row(
         children: <Widget>[
           Expanded(

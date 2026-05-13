@@ -33,7 +33,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   late BedtimeController _controller;
   bool _isConfirmingBedtime = false;
 
@@ -230,6 +231,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                   ),
+                  if (!widget.isReminderActive) ...<Widget>[
+                    SizedBox(height: compactLayout ? 18 : 26),
+                    _TonightReflection(
+                      streak: widget.streak,
+                      compact: compactLayout,
+                    ),
+                  ],
                   if (widget.isReminderActive && !ritualMode) ...<Widget>[
                     const SizedBox(height: 12),
                     OutlinedButton(
@@ -313,12 +321,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _showAboutSheet(BuildContext context) {
+    final sheetController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 360),
+      reverseDuration: const Duration(milliseconds: 240),
+    );
+
     return showModalBottomSheet<void>(
       context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.66),
       backgroundColor: const Color(0xFF211B2A),
+      transitionAnimationController: sheetController,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(34)),
       ),
+      clipBehavior: Clip.antiAlias,
       builder: (BuildContext context) {
         final bottomPadding = MediaQuery.paddingOf(context).bottom;
         return SafeArea(
@@ -333,10 +350,10 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Container(
-                  width: 40,
-                  height: 4,
+                  width: 36,
+                  height: 3,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF5D516A),
+                    color: const Color(0xFF8D7AA0).withValues(alpha: 0.52),
                     borderRadius: BorderRadius.circular(999),
                   ),
                 ),
@@ -376,7 +393,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       },
-    );
+    ).whenComplete(sheetController.dispose);
   }
 
   StreakFeedback _asLegacyStreakFeedback() {
@@ -428,6 +445,60 @@ class _HeroCopy {
 
   final String title;
   final String subtitle;
+}
+
+class _TonightReflection extends StatelessWidget {
+  const _TonightReflection({required this.streak, required this.compact});
+
+  final int streak;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final reflection = streak > 0
+        ? 'You have already begun. Keep tonight simple.'
+        : 'One quiet choice is enough for tonight.';
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: const Color(0xFF211B2A).withValues(alpha: 0.42),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFFCBB9A6).withValues(alpha: 0.08),
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          compact ? 16 : 18,
+          compact ? 14 : 16,
+          compact ? 16 : 18,
+          compact ? 14 : 16,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              'Tonight reflection',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: const Color(0xFFCBB9A6).withValues(alpha: 0.72),
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              reflection,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: const Color(0xFFF9F1E7).withValues(alpha: 0.78),
+                height: 1.45,
+                letterSpacing: 0,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _NightAtmosphere extends StatelessWidget {

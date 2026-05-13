@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class PrimaryButton extends StatelessWidget {
+class PrimaryButton extends StatefulWidget {
   const PrimaryButton({
     super.key,
     required this.label,
@@ -13,29 +13,65 @@ class PrimaryButton extends StatelessWidget {
   final bool dense;
 
   @override
+  State<PrimaryButton> createState() => _PrimaryButtonState();
+}
+
+class _PrimaryButtonState extends State<PrimaryButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _glowController;
+
+  @override
+  void initState() {
+    super.initState();
+    _glowController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3600),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _glowController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(17),
-        boxShadow: onPressed == null
-            ? null
-            : <BoxShadow>[
-                BoxShadow(
-                  color: const Color(0xFFF2B36F).withValues(alpha: 0.12),
-                  blurRadius: 18,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-      ),
+    return AnimatedBuilder(
+      animation: _glowController,
+      builder: (context, child) {
+        final glow = widget.onPressed == null
+            ? 0.0
+            : Tween<double>(
+                begin: 0.09,
+                end: 0.15,
+              ).transform(_glowController.value);
+
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(17),
+            boxShadow: widget.onPressed == null
+                ? null
+                : <BoxShadow>[
+                    BoxShadow(
+                      color: const Color(0xFFF2B36F).withValues(alpha: glow),
+                      blurRadius: 18 + (_glowController.value * 8),
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+          ),
+          child: child,
+        );
+      },
       child: FilledButton(
-        onPressed: onPressed == null
+        onPressed: widget.onPressed == null
             ? null
             : () async {
-                await onPressed!();
+                await widget.onPressed!();
               },
         style: ButtonStyle(
           minimumSize: WidgetStateProperty.all(
-            Size.fromHeight(dense ? 50 : 54),
+            Size.fromHeight(widget.dense ? 50 : 54),
           ),
           backgroundColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.disabled)) {
@@ -61,7 +97,7 @@ class PrimaryButton extends StatelessWidget {
             ),
           ),
         ),
-        child: Text(label),
+        child: Text(widget.label),
       ),
     );
   }
