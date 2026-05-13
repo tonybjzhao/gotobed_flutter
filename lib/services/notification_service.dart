@@ -18,6 +18,7 @@ class NotificationService {
   NotificationService._();
 
   static final NotificationService instance = NotificationService._();
+  static const String bedtimeNudgePayload = 'bedtime_nudge';
 
   factory NotificationService() => instance;
 
@@ -41,6 +42,8 @@ class NotificationService {
   ];
 
   bool _initialized = false;
+  bool _pendingBedtimeNudge = false;
+  VoidCallback? onBedtimeNudgeRequested;
 
   bool get _supportsNotifications =>
       !kIsWeb &&
@@ -66,11 +69,23 @@ class NotificationService {
 
     await _plugin.initialize(
       settings: settings,
-      onDidReceiveNotificationResponse: (_) {},
+      onDidReceiveNotificationResponse: _handleNotificationResponse,
     );
 
     await _createChannels();
+    final launchDetails = await _plugin.getNotificationAppLaunchDetails();
+    final launchPayload = launchDetails?.notificationResponse?.payload;
+    if (launchDetails?.didNotificationLaunchApp == true &&
+        _isBedtimeNudgePayload(launchPayload)) {
+      _pendingBedtimeNudge = true;
+    }
     _initialized = true;
+  }
+
+  bool consumePendingBedtimeNudge() {
+    final pending = _pendingBedtimeNudge;
+    _pendingBedtimeNudge = false;
+    return pending;
   }
 
   Future<void> requestPermissions() async {
@@ -185,7 +200,29 @@ class NotificationService {
       strong: true,
       soundEnabled: settings.soundVibrationEnabled,
       soundProfile: settings.reminderSoundProfile,
-      payload: _payloadFor(night.nightId, 'strong'),
+      payload: bedtimeNudgePayload,
+    );
+  }
+
+  Future<void> scheduleBedtimeNudgeIn({
+    required Duration delay,
+    bool soundEnabled = true,
+    ReminderSoundProfile soundProfile = ReminderSoundProfile.system,
+  }) async {
+    if (!_supportsNotifications) {
+      return;
+    }
+
+    await initialize();
+    await _scheduleNotification(
+      id: 999010,
+      title: 'It’s time to go to bed',
+      body: 'Put the phone down. You did enough today.',
+      when: DateTime.now().add(delay),
+      strong: true,
+      soundEnabled: soundEnabled,
+      soundProfile: soundProfile,
+      payload: bedtimeNudgePayload,
     );
   }
 
@@ -217,7 +254,7 @@ class NotificationService {
         strong: true,
         soundEnabled: settings.soundVibrationEnabled,
         soundProfile: settings.reminderSoundProfile,
-        payload: _payloadFor(night.nightId, 'snooze'),
+        payload: bedtimeNudgePayload,
       );
     }
   }
@@ -252,7 +289,7 @@ class NotificationService {
       strong: true,
       soundEnabled: settings.soundVibrationEnabled,
       soundProfile: settings.reminderSoundProfile,
-      payload: _payloadFor(night.nightId, 'overdue'),
+      payload: bedtimeNudgePayload,
     );
   }
 
@@ -265,6 +302,7 @@ class NotificationService {
     await _plugin.cancel(id: _notificationId(nightId, 2));
     await _plugin.cancel(id: _notificationId(nightId, 3));
     await _plugin.cancel(id: _notificationId(nightId, 4));
+    await _plugin.cancel(id: 999010);
   }
 
   Future<void> cancelTonightReminders(NightlyResult night) {
@@ -282,15 +320,19 @@ class NotificationService {
     await initialize();
 
     final useVoice =
-      soundEnabled && soundProfile == ReminderSoundProfile.softVoice;
+        soundEnabled && soundProfile == ReminderSoundProfile.softVoice;
     final voiceVariantIndex = useVoice ? _voiceVariantForSchedule() : null;
-    final voiceVariant = voiceVariantIndex == null ? null : voiceVariantIndex + 1;
+    final voiceVariant = voiceVariantIndex == null
+        ? null
+        : voiceVariantIndex + 1;
 
     final channelId = useVoice
         ? _voiceChannelId(strong: true, test: true, variant: voiceVariant!)
         : _testDefaultChannelId;
-    
-    debugPrint('📢 [TEST NOTIFICATION] soundEnabled=$soundEnabled, soundProfile=$soundProfile, useVoice=$useVoice, voiceVariant=$voiceVariant, channelId=$channelId');
+
+    debugPrint(
+      '📢 [TEST NOTIFICATION] soundEnabled=$soundEnabled, soundProfile=$soundProfile, useVoice=$useVoice, voiceVariant=$voiceVariant, channelId=$channelId',
+    );
 
     final details = NotificationDetails(
       android: AndroidNotificationDetails(
@@ -318,7 +360,9 @@ class NotificationService {
     await _plugin.show(
       id: 999001,
       title: 'GoToBed test',
-      body: useVoice ? 'Testing soft voice reminder 🌙' : 'Testing notification sound 🔔',
+      body: useVoice
+          ? 'Testing soft voice reminder 🌙'
+          : 'Testing notification sound 🔔',
       notificationDetails: details,
       payload: _payloadFor('test', 'manual'),
     );
@@ -368,7 +412,9 @@ class NotificationService {
       if (ch.id == _testDefaultChannelId ||
           ch.id == _gentleDefaultChannelId ||
           ch.id == _strongDefaultChannelId) {
-        debugPrint('📢 [CHANNEL READBACK] id=${ch.id}, playSound=${ch.playSound}, sound=${ch.sound}');
+        debugPrint(
+          '📢 [CHANNEL READBACK] id=${ch.id}, playSound=${ch.playSound}, sound=${ch.sound}',
+        );
       }
     }
 
@@ -380,13 +426,16 @@ class NotificationService {
         AndroidNotificationChannel(
           _voiceChannelId(strong: false, test: false, variant: variant),
           'Gentle reminders (voice $variant)',
-          description: 'Calm reminders before bedtime with soft voice $variant.',
+          description:
+              'Calm reminders before bedtime with soft voice $variant.',
           importance: Importance.defaultImportance,
           playSound: true,
           sound: RawResourceAndroidNotificationSound(soundName),
         ),
       );
-      debugPrint('📢 [CHANNELS] Created: ${_voiceChannelId(strong: false, test: false, variant: variant)} (sound=$soundName)');
+      debugPrint(
+        '📢 [CHANNELS] Created: ${_voiceChannelId(strong: false, test: false, variant: variant)} (sound=$soundName)',
+      );
 
       await androidImplementation?.createNotificationChannel(
         AndroidNotificationChannel(
@@ -399,7 +448,9 @@ class NotificationService {
           sound: RawResourceAndroidNotificationSound(soundName),
         ),
       );
-      debugPrint('📢 [CHANNELS] Created: ${_voiceChannelId(strong: true, test: false, variant: variant)} (sound=$soundName)');
+      debugPrint(
+        '📢 [CHANNELS] Created: ${_voiceChannelId(strong: true, test: false, variant: variant)} (sound=$soundName)',
+      );
 
       await androidImplementation?.createNotificationChannel(
         AndroidNotificationChannel(
@@ -411,7 +462,9 @@ class NotificationService {
           sound: RawResourceAndroidNotificationSound(soundName),
         ),
       );
-      debugPrint('📢 [CHANNELS] Created: ${_voiceChannelId(strong: true, test: true, variant: variant)} (sound=$soundName)');
+      debugPrint(
+        '📢 [CHANNELS] Created: ${_voiceChannelId(strong: true, test: true, variant: variant)} (sound=$soundName)',
+      );
     }
   }
 
@@ -426,11 +479,12 @@ class NotificationService {
     required String payload,
   }) async {
     final voiceVariantIndex =
-      soundEnabled && soundProfile == ReminderSoundProfile.softVoice
-      ? _voiceVariantForSchedule()
-      : null;
-    final voiceVariant =
-      voiceVariantIndex == null ? null : voiceVariantIndex + 1;
+        soundEnabled && soundProfile == ReminderSoundProfile.softVoice
+        ? _voiceVariantForSchedule()
+        : null;
+    final voiceVariant = voiceVariantIndex == null
+        ? null
+        : voiceVariantIndex + 1;
 
     final channelId = _channelIdFor(
       strong: strong,
@@ -537,8 +591,8 @@ class NotificationService {
         >();
 
     try {
-      final canScheduleExact =
-          await androidImplementation?.canScheduleExactNotifications();
+      final canScheduleExact = await androidImplementation
+          ?.canScheduleExactNotifications();
       if (canScheduleExact == true) {
         return AndroidScheduleMode.exactAllowWhileIdle;
       }
@@ -579,15 +633,31 @@ class NotificationService {
     required bool test,
     required int variant,
   }) {
-    final stage = test
-        ? 'test'
-        : (strong ? 'strong' : 'gentle');
+    final stage = test ? 'test' : (strong ? 'strong' : 'gentle');
     return 'sleep_nudger_${stage}_v3_voice_$variant';
   }
 
   int _notificationId(String nightId, int slot) {
     final compact = nightId.replaceAll('-', '');
     return int.parse(compact) * 10 + slot;
+  }
+
+  void _handleNotificationResponse(NotificationResponse response) {
+    if (!_isBedtimeNudgePayload(response.payload)) {
+      return;
+    }
+
+    final callback = onBedtimeNudgeRequested;
+    if (callback == null) {
+      _pendingBedtimeNudge = true;
+      return;
+    }
+
+    callback();
+  }
+
+  bool _isBedtimeNudgePayload(String? payload) {
+    return payload == bedtimeNudgePayload;
   }
 
   String _payloadFor(String nightId, String stage) {

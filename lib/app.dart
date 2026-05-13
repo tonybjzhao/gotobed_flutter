@@ -6,6 +6,7 @@ import 'models/morning_summary_copy.dart';
 import 'models/nightly_result.dart';
 import 'models/streak_feedback.dart';
 import 'screens/home_screen.dart';
+import 'screens/bedtime_nudge_screen.dart';
 import 'screens/morning_summary_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/settings_screen.dart';
@@ -86,6 +87,7 @@ class _SleepNudgerRootState extends State<SleepNudgerRoot> {
 
   bool _isLoading = true;
   bool _showSettings = false;
+  bool _showBedtimeNudge = false;
   AppSettings? _settings;
   NightlyResult? _currentNight;
   NightlyResult? _morningSummary;
@@ -95,12 +97,24 @@ class _SleepNudgerRootState extends State<SleepNudgerRoot> {
   @override
   void initState() {
     super.initState();
+    _notificationService.onBedtimeNudgeRequested = _openBedtimeNudge;
     _initialize();
+  }
+
+  @override
+  void dispose() {
+    if (_notificationService.onBedtimeNudgeRequested == _openBedtimeNudge) {
+      _notificationService.onBedtimeNudgeRequested = null;
+    }
+    super.dispose();
   }
 
   Future<void> _initialize() async {
     await _storageService.initialize();
     await _notificationService.initialize();
+    if (_notificationService.consumePendingBedtimeNudge()) {
+      _showBedtimeNudge = true;
+    }
     await _refreshState();
   }
 
@@ -251,6 +265,42 @@ class _SleepNudgerRootState extends State<SleepNudgerRoot> {
     await _refreshState();
   }
 
+  Future<void> _handleNudgeSleep() async {
+    await _handleBedtimeConfirmation();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _showBedtimeNudge = false;
+    });
+  }
+
+  Future<void> _handleNudgeRemindLater() async {
+    final settings = _settings;
+    await _notificationService.scheduleBedtimeNudgeIn(
+      delay: const Duration(minutes: 10),
+      soundEnabled: settings?.soundVibrationEnabled ?? true,
+      soundProfile:
+          settings?.reminderSoundProfile ?? ReminderSoundProfile.system,
+    );
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _showBedtimeNudge = false;
+    });
+  }
+
+  void _openBedtimeNudge() {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _showSettings = false;
+      _showBedtimeNudge = true;
+    });
+  }
+
   Future<void> _handleMorningSummaryContinue() async {
     final summary = _morningSummary;
     if (summary == null) {
@@ -273,6 +323,13 @@ class _SleepNudgerRootState extends State<SleepNudgerRoot> {
       return OnboardingScreen(
         initialSettings: AppSettings.defaults(),
         onSave: _handleOnboardingSave,
+      );
+    }
+
+    if (_showBedtimeNudge) {
+      return BedtimeNudgeScreen(
+        onGoingToSleep: _handleNudgeSleep,
+        onRemindLater: _handleNudgeRemindLater,
       );
     }
 

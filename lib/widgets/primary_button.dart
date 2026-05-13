@@ -21,10 +21,10 @@ class PrimaryButton extends StatelessWidget {
               await onPressed!();
             },
       style: FilledButton.styleFrom(
-        minimumSize: Size.fromHeight(dense ? 52 : 56),
+        minimumSize: const Size.fromHeight(52),
         backgroundColor: const Color(0xFFF2B36F),
         foregroundColor: const Color(0xFF2B1802),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
       ),
       child: Text(label),

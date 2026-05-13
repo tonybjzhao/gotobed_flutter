@@ -7,7 +7,6 @@ import '../models/app_settings.dart';
 import '../models/nightly_result.dart';
 import '../models/streak_feedback.dart';
 import '../widgets/bedtime_status_card.dart';
-import '../widgets/info_card.dart';
 import '../widgets/primary_button.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -78,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final viewportHeight =
         media.size.height - media.padding.vertical - kToolbarHeight;
     final compactLayout =
-        viewportHeight < 780 || media.textScaler.scale(1) > 1.05;
+        viewportHeight < 820 || media.textScaler.scale(1) > 1.05;
     final nextReminderText = _nextReminderLabel(context);
     final bedtimeText = MaterialLocalizations.of(
       context,
@@ -95,7 +94,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: compactLayout ? 52 : 56,
         title: const Text('Tonight'),
+        titleTextStyle: Theme.of(context).textTheme.headlineMedium?.copyWith(
+          color: const Color(0xFFF9F1E7),
+          fontWeight: FontWeight.w400,
+          letterSpacing: 0,
+        ),
         actions: <Widget>[
           TextButton.icon(
             onPressed: widget.onOpenSettings,
@@ -111,133 +116,139 @@ class _HomeScreenState extends State<HomeScreen> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 320),
           color: ritualMode ? const Color(0x0DFFFFFF) : Colors.transparent,
-          child: ListView(
-            padding: EdgeInsets.fromLTRB(
-              24,
-              compactLayout ? 6 : 12,
-              24,
-              compactLayout ? 22 : 32,
-            ),
+          child: Stack(
             children: <Widget>[
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 280),
-                switchInCurve: Curves.easeOut,
-                switchOutCurve: Curves.easeIn,
-                transitionBuilder: _fadeSlideTransition,
-                child: Text(
-                  heroCopy.title,
-                  key: ValueKey<String>(heroCopy.title),
-                  style: (compactLayout
-                          ? Theme.of(context).textTheme.headlineLarge
-                          : Theme.of(context).textTheme.displaySmall)
-                      ?.copyWith(fontWeight: FontWeight.w700),
+              const Positioned.fill(child: _NightAtmosphere()),
+              ListView(
+                padding: EdgeInsets.fromLTRB(
+                  24,
+                  compactLayout ? 6 : 12,
+                  24,
+                  compactLayout ? 22 : 32,
                 ),
-              ),
-              SizedBox(height: compactLayout ? 6 : 10),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 280),
-                switchInCurve: Curves.easeOut,
-                switchOutCurve: Curves.easeIn,
-                transitionBuilder: _fadeSlideTransition,
-                child: Text(
-                  heroCopy.subtitle,
-                  key: ValueKey<String>(heroCopy.subtitle),
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: const Color(0xFFCBB9A6),
-                    height: compactLayout ? 1.4 : 1.5,
-                  ),
-                ),
-              ),
-              SizedBox(height: compactLayout ? 18 : 24),
-              AnimatedSlide(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOut,
-                offset: ritualMode ? const Offset(0, 0.02) : Offset.zero,
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 300),
-                  opacity: ritualMode ? 0.94 : 1,
-                  child: Column(
-                    children: <Widget>[
-                      BedtimeStatusCard(
-                        bedtimeLabel: bedtimeText,
-                        nextReminderLabel: nextReminderText,
-                        streakFeedback: _asLegacyStreakFeedback(),
-                        compact: compactLayout,
-                      ),
-                      SizedBox(height: compactLayout ? 12 : 16),
-                      InfoCard(
-                        title: 'Tonight’s plan',
-                        subtitle: copy.tonightPlan,
-                        compact: compactLayout,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: compactLayout ? 18 : 24),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 320),
-                switchInCurve: Curves.easeOut,
-                switchOutCurve: Curves.easeIn,
-                transitionBuilder: _fadeSlideTransition,
-                child: PrimaryButton(
-                  key: ValueKey<String>(copy.cta),
-                  label: _isConfirmingBedtime ? 'Settling in...' : copy.cta,
-                  onPressed: copy.ctaEnabled ? _handlePrimaryAction : null,
-                  dense: compactLayout,
-                ),
-              ),
-              SizedBox(height: compactLayout ? 10 : 14),
-              Center(
-                child: Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 10,
-                  children: <Widget>[
-                    TextButton(
-                      onPressed: widget.onOpenSettings,
-                      style: TextButton.styleFrom(
-                        foregroundColor: const Color(0xFFCBB9A6),
-                        textStyle: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      child: const Text('Settings'),
+                children: <Widget>[
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 280),
+                    switchInCurve: Curves.easeOut,
+                    switchOutCurve: Curves.easeIn,
+                    transitionBuilder: _fadeSlideTransition,
+                    child: Text(
+                      heroCopy.title,
+                      key: ValueKey<String>(heroCopy.title),
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(
+                            fontSize: compactLayout ? 34 : 38,
+                            fontWeight: FontWeight.w800,
+                            height: 1.08,
+                            letterSpacing: 0,
+                          ),
                     ),
-                    Text(
-                      '·',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF6E6478),
+                  ),
+                  SizedBox(height: compactLayout ? 14 : 20),
+                  AnimatedSlide(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOut,
+                    offset: ritualMode ? const Offset(0, 0.02) : Offset.zero,
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 300),
+                      opacity: ritualMode ? 0.94 : 1,
+                      child: Column(
+                        children: <Widget>[
+                          BedtimeStatusCard(
+                            bedtimeLabel: bedtimeText,
+                            nextReminderLabel: nextReminderText,
+                            streakFeedback: _asLegacyStreakFeedback(),
+                            compact: compactLayout,
+                          ),
+                        ],
                       ),
                     ),
-                    TextButton(
-                      onPressed: () => _showAboutSheet(context),
-                      style: TextButton.styleFrom(
-                        foregroundColor: const Color(0xFFCBB9A6),
-                        textStyle: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  SizedBox(height: compactLayout ? 16 : 20),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 320),
+                    switchInCurve: Curves.easeOut,
+                    switchOutCurve: Curves.easeIn,
+                    transitionBuilder: _fadeSlideTransition,
+                    child: PrimaryButton(
+                      key: ValueKey<String>(copy.cta),
+                      label: _isConfirmingBedtime ? 'Settling in...' : copy.cta,
+                      onPressed: copy.ctaEnabled ? _handlePrimaryAction : null,
+                      dense: compactLayout,
+                    ),
+                  ),
+                  SizedBox(height: compactLayout ? 10 : 14),
+                  Text(
+                    'Tomorrow starts tonight.',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: const Color(0xFFCBB9A6).withValues(alpha: 0.48),
+                      height: 1.35,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                  SizedBox(height: compactLayout ? 2 : 4),
+                  Center(
+                    child: Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      children: <Widget>[
+                        TextButton(
+                          onPressed: widget.onOpenSettings,
+                          style: TextButton.styleFrom(
+                            foregroundColor: const Color(
+                              0xFFCBB9A6,
+                            ).withValues(alpha: 0.7),
+                            visualDensity: VisualDensity.compact,
+                            textStyle: Theme.of(
+                              context,
+                            ).textTheme.bodySmall?.copyWith(fontSize: 13),
+                          ),
+                          child: const Text('Settings'),
+                        ),
+                        Text(
+                          '·',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: const Color(0xFF6E6478)),
+                        ),
+                        TextButton(
+                          onPressed: () => _showAboutSheet(context),
+                          style: TextButton.styleFrom(
+                            foregroundColor: const Color(
+                              0xFFCBB9A6,
+                            ).withValues(alpha: 0.7),
+                            visualDensity: VisualDensity.compact,
+                            textStyle: Theme.of(
+                              context,
+                            ).textTheme.bodySmall?.copyWith(fontSize: 13),
+                          ),
+                          child: const Text('About'),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (widget.isReminderActive && !ritualMode) ...<Widget>[
+                    const SizedBox(height: 12),
+                    OutlinedButton(
+                      onPressed: widget.currentNight.snoozeCount >= 3
+                          ? null
+                          : widget.onSnooze,
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(54),
+                        side: const BorderSide(color: Color(0xFF5D516A)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
                       ),
-                      child: const Text('About'),
+                      child: Text(
+                        widget.currentNight.snoozeCount >= 3
+                            ? 'Snooze limit reached'
+                            : 'Snooze 10 min',
+                      ),
                     ),
                   ],
-                ),
+                ],
               ),
-              if (widget.isReminderActive && !ritualMode) ...<Widget>[
-                const SizedBox(height: 12),
-                OutlinedButton(
-                  onPressed: widget.currentNight.snoozeCount >= 3
-                      ? null
-                      : widget.onSnooze,
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(54),
-                    side: const BorderSide(color: Color(0xFF5D516A)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                  ),
-                  child: Text(
-                    widget.currentNight.snoozeCount >= 3
-                        ? 'Snooze limit reached'
-                        : 'Snooze 10 min',
-                  ),
-                ),
-              ],
             ],
           ),
         ),
@@ -247,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String _nextReminderLabel(BuildContext context) {
     if (widget.currentNight.confirmedAt != null) {
-      return _controller.tonightCopy.nextReminderLabel;
+      return 'On track tonight';
     }
 
     final now = DateTime.now();
@@ -306,44 +317,48 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (BuildContext context) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF5D516A),
-                  borderRadius: BorderRadius.circular(999),
+        final bottomPadding = MediaQuery.paddingOf(context).bottom;
+        return SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(24, 20, 24, 28 + bottomPadding),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF5D516A),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'About GoToBed',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
+                const SizedBox(height: 20),
+                Text(
+                  'About GoToBed',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'GoToBed is a gentle bedtime companion built to help late-night scrolling end a little earlier, without guilt.',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: const Color(0xFFCBB9A6),
-                  height: 1.5,
+                const SizedBox(height: 12),
+                Text(
+                  'GoToBed is a gentle bedtime companion built to help late-night scrolling end a little earlier, without guilt.',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: const Color(0xFFCBB9A6),
+                    height: 1.5,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Tonight is home by design. Settings and About are quiet side paths, so the app always brings you back to winding down for the night.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFFF2B36F),
-                  height: 1.45,
+                const SizedBox(height: 20),
+                Text(
+                  'Tonight is home by design. Settings and About are quiet side paths, so the app always brings you back to winding down for the night.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: const Color(0xFFF2B36F),
+                    height: 1.45,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -383,23 +398,14 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     if (now.hour < 21) {
-      return const _HeroCopy(
-        title: 'A calm night starts now.',
-        subtitle: 'A little earlier tonight can make tomorrow softer.',
-      );
+      return const _HeroCopy(title: 'A calm night starts now.', subtitle: '');
     }
 
     if (now.hour < 23) {
-      return const _HeroCopy(
-        title: 'It’s getting late.',
-        subtitle: 'Just a little earlier tonight is enough.',
-      );
+      return const _HeroCopy(title: 'It’s getting late.', subtitle: '');
     }
 
-    return const _HeroCopy(
-      title: 'Still awake?',
-      subtitle: 'Let’s wind down and call it a night soon.',
-    );
+    return const _HeroCopy(title: 'Still awake?', subtitle: '');
   }
 }
 
@@ -408,4 +414,74 @@ class _HeroCopy {
 
   final String title;
   final String subtitle;
+}
+
+class _NightAtmosphere extends StatelessWidget {
+  const _NightAtmosphere();
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: RadialGradient(
+            center: const Alignment(0.15, 1.06),
+            radius: 0.88,
+            colors: <Color>[
+              const Color(0xFFF2B36F).withValues(alpha: 0.11),
+              const Color(0xFF8E7DBE).withValues(alpha: 0.08),
+              Colors.transparent,
+            ],
+            stops: const <double>[0, 0.38, 1],
+          ),
+        ),
+        child: const Stack(
+          children: <Widget>[
+            _StarDot(left: 0.16, bottom: 0.19, size: 2.2, opacity: 0.20),
+            _StarDot(left: 0.33, bottom: 0.28, size: 1.6, opacity: 0.16),
+            _StarDot(left: 0.68, bottom: 0.22, size: 1.8, opacity: 0.18),
+            _StarDot(left: 0.82, bottom: 0.34, size: 2.4, opacity: 0.14),
+            _StarDot(left: 0.52, bottom: 0.13, size: 1.4, opacity: 0.14),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StarDot extends StatelessWidget {
+  const _StarDot({
+    required this.left,
+    required this.bottom,
+    required this.size,
+    required this.opacity,
+  });
+
+  final double left;
+  final double bottom;
+  final double size;
+  final double opacity;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: MediaQuery.sizeOf(context).width * left,
+      bottom: MediaQuery.sizeOf(context).height * bottom,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: const Color(0xFFF9F1E7).withValues(alpha: opacity),
+          boxShadow: <BoxShadow>[
+            BoxShadow(
+              color: const Color(0xFFF2B36F).withValues(alpha: opacity * 0.5),
+              blurRadius: 8,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../models/app_settings.dart';
+import '../services/ad_service.dart';
 import '../services/notification_service.dart';
+import '../widgets/ad_banner.dart';
 import '../widgets/primary_button.dart';
 
 // Channel for opening the platform notification settings screen.
@@ -115,6 +117,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         title: const Text('Settings'),
       ),
+      bottomNavigationBar: AdService.bannerAdEnabled &&
+              AdService.showBannerOnSettingsOnly
+          ? const AdBanner()
+          : null,
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: <Widget>[
