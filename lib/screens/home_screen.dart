@@ -120,11 +120,14 @@ class _HomeScreenState extends State<HomeScreen> {
             children: <Widget>[
               const Positioned.fill(child: _NightAtmosphere()),
               ListView(
+                physics: const BouncingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics(),
+                ),
                 padding: EdgeInsets.fromLTRB(
                   24,
                   compactLayout ? 6 : 12,
                   24,
-                  compactLayout ? 22 : 32,
+                  compactLayout ? 34 : 46,
                 ),
                 children: <Widget>[
                   AnimatedSwitcher(
@@ -138,8 +141,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: Theme.of(context).textTheme.headlineMedium
                           ?.copyWith(
                             fontSize: compactLayout ? 34 : 38,
-                            fontWeight: FontWeight.w800,
-                            height: 1.08,
+                            fontWeight: FontWeight.w700,
+                            height: 1.12,
                             letterSpacing: 0,
                           ),
                     ),
@@ -183,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: const Color(0xFFCBB9A6).withValues(alpha: 0.48),
-                      height: 1.35,
+                      height: 1.45,
                       letterSpacing: 0,
                     ),
                   ),
@@ -321,7 +324,10 @@ class _HomeScreenState extends State<HomeScreen> {
         return SafeArea(
           top: false,
           child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(24, 20, 24, 28 + bottomPadding),
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
+            padding: EdgeInsets.fromLTRB(24, 20, 24, 32 + bottomPadding),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -341,20 +347,28 @@ class _HomeScreenState extends State<HomeScreen> {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 Text(
-                  'GoToBed is a gentle bedtime companion built to help late-night scrolling end a little earlier, without guilt.',
+                  'GoToBed helps you end the day a little earlier.',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: const Color(0xFFCBB9A6),
-                    height: 1.5,
+                    height: 1.58,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 18),
                 Text(
-                  'Tonight is home by design. Settings and About are quiet side paths, so the app always brings you back to winding down for the night.',
+                  'Not through pressure, but through gentler evenings.',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: const Color(0xFFF9F1E7),
+                    height: 1.58,
+                  ),
+                ),
+                const SizedBox(height: 26),
+                Text(
+                  'Tonight stays quiet on purpose. The app brings you back to one small choice: close the day, and let tomorrow begin with more room.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: const Color(0xFFF2B36F),
-                    height: 1.45,
+                    color: const Color(0xFFCBB9A6).withValues(alpha: 0.82),
+                    height: 1.55,
                   ),
                 ),
               ],
@@ -428,8 +442,8 @@ class _NightAtmosphere extends StatelessWidget {
             center: const Alignment(0.15, 1.06),
             radius: 0.88,
             colors: <Color>[
-              const Color(0xFFF2B36F).withValues(alpha: 0.11),
-              const Color(0xFF8E7DBE).withValues(alpha: 0.08),
+              const Color(0xFFF2B36F).withValues(alpha: 0.075),
+              const Color(0xFF8E7DBE).withValues(alpha: 0.055),
               Colors.transparent,
             ],
             stops: const <double>[0, 0.38, 1],
@@ -437,11 +451,9 @@ class _NightAtmosphere extends StatelessWidget {
         ),
         child: const Stack(
           children: <Widget>[
-            _StarDot(left: 0.16, bottom: 0.19, size: 2.2, opacity: 0.20),
-            _StarDot(left: 0.33, bottom: 0.28, size: 1.6, opacity: 0.16),
-            _StarDot(left: 0.68, bottom: 0.22, size: 1.8, opacity: 0.18),
-            _StarDot(left: 0.82, bottom: 0.34, size: 2.4, opacity: 0.14),
-            _StarDot(left: 0.52, bottom: 0.13, size: 1.4, opacity: 0.14),
+            _StarDot(left: 0.18, bottom: 0.20, size: 1.7, opacity: 0.12),
+            _StarDot(left: 0.67, bottom: 0.23, size: 1.5, opacity: 0.11),
+            _StarDot(left: 0.83, bottom: 0.35, size: 1.9, opacity: 0.10),
           ],
         ),
       ),
@@ -476,8 +488,8 @@ class _StarDot extends StatelessWidget {
           boxShadow: <BoxShadow>[
             BoxShadow(
               color: const Color(0xFFF2B36F).withValues(alpha: opacity * 0.5),
-              blurRadius: 8,
-              spreadRadius: 1,
+              blurRadius: 12,
+              spreadRadius: 0.6,
             ),
           ],
         ),

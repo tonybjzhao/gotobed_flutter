@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'domain/bedtime/bedtime_copy_engine.dart';
@@ -65,8 +66,24 @@ class SleepNudgerApp extends StatelessWidget {
         ),
         dividerColor: muted.withValues(alpha: 0.18),
       ),
+      scrollBehavior: const _SleepNudgerScrollBehavior(),
       home: const SleepNudgerRoot(),
     );
+  }
+}
+
+class _SleepNudgerScrollBehavior extends MaterialScrollBehavior {
+  const _SleepNudgerScrollBehavior();
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return const BouncingScrollPhysics(
+        parent: AlwaysScrollableScrollPhysics(),
+      );
+    }
+
+    return super.getScrollPhysics(context);
   }
 }
 

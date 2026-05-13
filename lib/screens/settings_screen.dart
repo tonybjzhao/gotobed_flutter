@@ -9,8 +9,9 @@ import '../widgets/ad_banner.dart';
 import '../widgets/primary_button.dart';
 
 // Channel for opening the platform notification settings screen.
-const MethodChannel _settingsChannel =
-    MethodChannel('com.in5km.gotobed/settings');
+const MethodChannel _settingsChannel = MethodChannel(
+  'com.in5km.gotobed/settings',
+);
 
 Future<void> _openNotificationSettings() async {
   try {
@@ -109,6 +110,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -117,173 +120,177 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         title: const Text('Settings'),
       ),
-      bottomNavigationBar: AdService.bannerAdEnabled &&
-              AdService.showBannerOnSettingsOnly
+      bottomNavigationBar:
+          AdService.bannerAdEnabled && AdService.showBannerOnSettingsOnly
           ? const AdBanner()
           : null,
-      body: ListView(
-        padding: const EdgeInsets.all(24),
-        children: <Widget>[
-          _SettingsTile(
-            label: 'Bedtime',
-            value: MaterialLocalizations.of(context).formatTimeOfDay(_bedtime),
-            onTap: _pickBedtime,
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
           ),
-          if (_daytimeHint != null) ...<Widget>[
-            const SizedBox(height: 10),
-            Text(
-              _daytimeHint!,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: const Color(0xFFF2B36F),
-                height: 1.4,
-              ),
+          padding: EdgeInsets.fromLTRB(20, 8, 20, 32 + bottomPadding),
+          children: <Widget>[
+            _SettingsSection(
+              title: 'Bedtime',
+              children: <Widget>[
+                _SettingsTile(
+                  label: 'Bedtime',
+                  value: MaterialLocalizations.of(
+                    context,
+                  ).formatTimeOfDay(_bedtime),
+                  onTap: _pickBedtime,
+                ),
+              ],
             ),
-          ],
-          const SizedBox(height: 16),
-          InputDecorator(
-            decoration: _decoration('Reminder lead time'),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<int>(
-                value: _leadMinutes,
-                dropdownColor: const Color(0xFF211B2A),
-                items: _leadTimes
-                    .map(
-                      (minutes) => DropdownMenuItem<int>(
-                        value: minutes,
-                        child: Text('$minutes minutes'),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  if (value == null) {
-                    return;
-                  }
-                  setState(() {
-                    _leadMinutes = value;
-                  });
-                },
+            if (_daytimeHint != null) ...<Widget>[
+              const SizedBox(height: 10),
+              Text(
+                _daytimeHint!,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: const Color(0xFFF2B36F),
+                  height: 1.45,
+                ),
               ),
+            ],
+            const SizedBox(height: 18),
+            _SettingsSection(
+              title: 'Reminder',
+              children: <Widget>[
+                _SettingsDropdown<int>(
+                  label: 'Lead time',
+                  value: _leadMinutes,
+                  items: _leadTimes
+                      .map(
+                        (minutes) => DropdownMenuItem<int>(
+                          value: minutes,
+                          child: Text('$minutes minutes'),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    if (value == null) {
+                      return;
+                    }
+                    setState(() {
+                      _leadMinutes = value;
+                    });
+                  },
+                ),
+                const _SettingsDivider(),
+                SwitchListTile(
+                  value: _gentleReminderEnabled,
+                  onChanged: (value) {
+                    setState(() {
+                      _gentleReminderEnabled = value;
+                    });
+                  },
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Gentle reminder'),
+                  subtitle: const Text('Start softly before bedtime.'),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 16),
-          SwitchListTile(
-            value: _gentleReminderEnabled,
-            onChanged: (value) {
-              setState(() {
-                _gentleReminderEnabled = value;
-              });
-            },
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Gentle reminder'),
-            subtitle: const Text('Start softly before bedtime.'),
-          ),
-          const SizedBox(height: 8),
-          SwitchListTile(
-            value: _soundVibrationEnabled,
-            onChanged: (value) {
-              setState(() {
-                _soundVibrationEnabled = value;
-              });
-            },
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Sound and vibration'),
-            subtitle: const Text('Add sound and haptics to bedtime nudges.'),
-          ),
-          const SizedBox(height: 16),
-          InputDecorator(
-            decoration: _decoration('Reminder sound'),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<ReminderSoundProfile>(
-                value: _reminderSoundProfile,
-                dropdownColor: const Color(0xFF211B2A),
-                items: ReminderSoundProfile.values
-                    .map(
-                      (profile) => DropdownMenuItem<ReminderSoundProfile>(
-                        value: profile,
-                        child: Text(profile.label),
-                      ),
-                    )
-                    .toList(),
-                onChanged: _soundVibrationEnabled
-                    ? (value) {
-                        if (value == null) {
-                          return;
+            const SizedBox(height: 18),
+            _SettingsSection(
+              title: 'Sound',
+              children: <Widget>[
+                SwitchListTile(
+                  value: _soundVibrationEnabled,
+                  onChanged: (value) {
+                    setState(() {
+                      _soundVibrationEnabled = value;
+                    });
+                  },
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Sound and vibration'),
+                  subtitle: const Text(
+                    'Add sound and haptics to bedtime nudges.',
+                  ),
+                ),
+                const _SettingsDivider(),
+                _SettingsDropdown<ReminderSoundProfile>(
+                  label: 'Reminder sound',
+                  value: _reminderSoundProfile,
+                  enabled: _soundVibrationEnabled,
+                  items: ReminderSoundProfile.values
+                      .map(
+                        (profile) => DropdownMenuItem<ReminderSoundProfile>(
+                          value: profile,
+                          child: Text(profile.label),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: _soundVibrationEnabled
+                      ? (value) {
+                          if (value == null) {
+                            return;
+                          }
+                          setState(() {
+                            _reminderSoundProfile = value;
+                          });
                         }
-                        setState(() {
-                          _reminderSoundProfile = value;
-                        });
-                      }
-                    : null,
-              ),
+                      : null,
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'If reminders arrive late on some Android phones, disable battery optimization for GoToBed.',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: const Color(0xFFCBB9A6),
-              height: 1.4,
-            ),
-          ),
-          if (_iosSoundHint != null) ...<Widget>[
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
-              _iosSoundHint!,
+              'If reminders arrive late on some Android phones, disable battery optimization for GoToBed.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: const Color(0xFFCBB9A6),
-                height: 1.4,
+                height: 1.45,
               ),
+            ),
+            if (_iosSoundHint != null) ...<Widget>[
+              const SizedBox(height: 8),
+              Text(
+                _iosSoundHint!,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: const Color(0xFFCBB9A6),
+                  height: 1.45,
+                ),
+              ),
+            ],
+            const SizedBox(height: 4),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => _showReminderTroubleshootingSheet(context),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFFF2B36F),
+                  padding: EdgeInsets.zero,
+                  visualDensity: VisualDensity.compact,
+                ),
+                icon: const Icon(Icons.tune_rounded, size: 18),
+                label: const Text('Troubleshoot delayed reminders'),
+              ),
+            ),
+            const SizedBox(height: 24),
+            OutlinedButton(
+              onPressed: _isTestingNotification ? null : _sendTestNotification,
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(52),
+                side: const BorderSide(color: Color(0x55F2B36F)),
+                foregroundColor: const Color(0xFFF2B36F),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(17),
+                ),
+              ),
+              child: Text(
+                _isTestingNotification
+                    ? 'Scheduling test notification...'
+                    : 'Try a test nudge (5 sec)',
+              ),
+            ),
+            const SizedBox(height: 14),
+            PrimaryButton(
+              label: _isSaving ? 'Saving...' : 'Save changes',
+              onPressed: _isSaving ? null : _save,
             ),
           ],
-          const SizedBox(height: 4),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: () => _showReminderTroubleshootingSheet(context),
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFFF2B36F),
-                padding: EdgeInsets.zero,
-                visualDensity: VisualDensity.compact,
-              ),
-              icon: const Icon(Icons.tune_rounded, size: 18),
-              label: const Text('Troubleshoot delayed reminders'),
-            ),
-          ),
-          const SizedBox(height: 24),
-          OutlinedButton(
-            onPressed: _isTestingNotification ? null : _sendTestNotification,
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size.fromHeight(52),
-              side: const BorderSide(color: Color(0x55F2B36F)),
-              foregroundColor: const Color(0xFFF2B36F),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
-              ),
-            ),
-            child: Text(
-              _isTestingNotification
-                  ? 'Scheduling test notification...'
-                  : 'Try a test nudge (5 sec)',
-            ),
-          ),
-          const SizedBox(height: 12),
-          PrimaryButton(
-            label: _isSaving ? 'Saving...' : 'Save changes',
-            onPressed: _isSaving ? null : _save,
-          ),
-        ],
-      ),
-    );
-  }
-
-  InputDecoration _decoration(String label) {
-    return InputDecoration(
-      labelText: label,
-      filled: true,
-      fillColor: const Color(0xFF211B2A),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20),
-        borderSide: BorderSide.none,
+        ),
       ),
     );
   }
@@ -365,7 +372,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Test notification sent — check your notification shade.'),
+        content: Text(
+          'Test notification sent — check your notification shade.',
+        ),
       ),
     );
   }
@@ -405,7 +414,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return SafeArea(
           top: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
+            padding: EdgeInsets.fromLTRB(
+              24,
+              20,
+              24,
+              32 + MediaQuery.paddingOf(sheetContext).bottom,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -438,8 +452,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Text(
                       step,
-                      style: Theme.of(sheetContext).textTheme.bodyMedium
-                          ?.copyWith(height: 1.4),
+                      style: Theme.of(
+                        sheetContext,
+                      ).textTheme.bodyMedium?.copyWith(height: 1.4),
                     ),
                   ),
                 ),
@@ -458,7 +473,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: Text(
                       hint,
                       style: Theme.of(sheetContext).textTheme.bodySmall
-                          ?.copyWith(color: const Color(0xFFCBB9A6), height: 1.35),
+                          ?.copyWith(
+                            color: const Color(0xFFCBB9A6),
+                            height: 1.35,
+                          ),
                     ),
                   ),
                 ),
@@ -468,7 +486,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () async {
-                          await Clipboard.setData(ClipboardData(text: copyText));
+                          await Clipboard.setData(
+                            ClipboardData(text: copyText),
+                          );
                           if (!sheetContext.mounted) {
                             return;
                           }
@@ -500,7 +520,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
-                        icon: const Icon(Icons.notifications_active_outlined, size: 18),
+                        icon: const Icon(
+                          Icons.notifications_active_outlined,
+                          size: 18,
+                        ),
                         label: const Text('Notification settings'),
                       ),
                     ),
@@ -511,6 +534,59 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         );
       },
+    );
+  }
+}
+
+class _SettingsSection extends StatelessWidget {
+  const _SettingsSection({required this.title, required this.children});
+
+  final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Text(
+            title,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: const Color(0xFFCBB9A6).withValues(alpha: 0.78),
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0,
+            ),
+          ),
+        ),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: const Color(0xFF211B2A),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: const Color(0xFFCBB9A6).withValues(alpha: 0.07),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            child: Column(children: children),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SettingsDivider extends StatelessWidget {
+  const _SettingsDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Divider(
+      height: 1,
+      thickness: 1,
+      color: const Color(0xFFCBB9A6).withValues(alpha: 0.11),
     );
   }
 }
@@ -530,13 +606,9 @@ class _SettingsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(14),
       child: Ink(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: const Color(0xFF211B2A),
-          borderRadius: BorderRadius.circular(20),
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 15),
         child: Row(
           children: <Widget>[
             Text(label),
@@ -545,11 +617,81 @@ class _SettingsTile extends StatelessWidget {
               value,
               style: const TextStyle(
                 color: Color(0xFFF2B36F),
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0,
               ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(
+              Icons.chevron_right_rounded,
+              size: 20,
+              color: Color(0x997C7188),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SettingsDropdown<T> extends StatelessWidget {
+  const _SettingsDropdown({
+    required this.label,
+    required this.value,
+    required this.items,
+    required this.onChanged,
+    this.enabled = true,
+  });
+
+  final String label;
+  final T value;
+  final List<DropdownMenuItem<T>> items;
+  final ValueChanged<T?>? onChanged;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final valueStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
+      color: enabled
+          ? const Color(0xFFF2B36F)
+          : const Color(0xFFCBB9A6).withValues(alpha: 0.45),
+      fontWeight: FontWeight.w700,
+      letterSpacing: 0,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: enabled
+                    ? const Color(0xFFF9F1E7)
+                    : const Color(0xFFCBB9A6).withValues(alpha: 0.55),
+                letterSpacing: 0,
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          DropdownButtonHideUnderline(
+            child: DropdownButton<T>(
+              value: value,
+              dropdownColor: const Color(0xFF211B2A),
+              icon: Icon(
+                Icons.expand_more_rounded,
+                size: 20,
+                color: enabled
+                    ? const Color(0xFFF2B36F)
+                    : const Color(0xFFCBB9A6).withValues(alpha: 0.4),
+              ),
+              style: valueStyle,
+              items: items,
+              onChanged: enabled ? onChanged : null,
+            ),
+          ),
+        ],
       ),
     );
   }
