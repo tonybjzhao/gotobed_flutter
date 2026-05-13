@@ -33,8 +33,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> {
   late BedtimeController _controller;
   bool _isConfirmingBedtime = false;
 
@@ -321,78 +320,42 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Future<void> _showAboutSheet(BuildContext context) {
-    final sheetController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 360),
-      reverseDuration: const Duration(milliseconds: 240),
-    );
-
-    return showModalBottomSheet<void>(
+    return showGeneralDialog<void>(
       context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.66),
-      backgroundColor: const Color(0xFF211B2A),
-      isScrollControlled: true,
-      isDismissible: true,
-      enableDrag: true,
-      showDragHandle: false,
-      transitionAnimationController: sheetController,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(34)),
-      ),
-      clipBehavior: Clip.antiAlias,
-      builder: (BuildContext context) {
-        final bottomPadding = MediaQuery.paddingOf(context).bottom;
-        return SafeArea(
-          top: false,
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(24, 20, 24, 32 + bottomPadding),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+      barrierColor: Colors.transparent,
+      barrierDismissible: true,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      transitionDuration: const Duration(milliseconds: 320),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Material(
+          color: Colors.transparent,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => Navigator.of(context).maybePop(),
+            child: Stack(
               children: <Widget>[
-                SizedBox(
-                  height: 28,
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: Container(
-                      width: 36,
-                      height: 3,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFB8A7C9).withValues(alpha: 0.76),
-                        borderRadius: BorderRadius.circular(999),
+                Positioned.fill(
+                  child: ColoredBox(
+                    color: Colors.black.withValues(alpha: 0.66),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {},
+                    onVerticalDragEnd: (details) {
+                      final velocity = details.primaryVelocity ?? 0;
+                      if (velocity > 220) {
+                        Navigator.of(context).maybePop();
+                      }
+                    },
+                    child: SafeArea(
+                      top: false,
+                      child: _AboutSheetContent(
+                        bottomPadding: MediaQuery.paddingOf(context).bottom,
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'About GoToBed',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'GoToBed helps you end the day a little earlier.',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: const Color(0xFFCBB9A6),
-                    height: 1.58,
-                  ),
-                ),
-                const SizedBox(height: 18),
-                Text(
-                  'Not through pressure, but through gentler evenings.',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: const Color(0xFFF9F1E7),
-                    height: 1.58,
-                  ),
-                ),
-                const SizedBox(height: 26),
-                Text(
-                  'One quieter night can change tomorrow.',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: const Color(0xFFCBB9A6).withValues(alpha: 0.82),
-                    height: 1.55,
                   ),
                 ),
               ],
@@ -400,7 +363,25 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         );
       },
-    ).whenComplete(sheetController.dispose);
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
+        );
+
+        return FadeTransition(
+          opacity: curved,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.05),
+              end: Offset.zero,
+            ).animate(curved),
+            child: child,
+          ),
+        );
+      },
+    );
   }
 
   StreakFeedback _asLegacyStreakFeedback() {
@@ -452,6 +433,76 @@ class _HeroCopy {
 
   final String title;
   final String subtitle;
+}
+
+class _AboutSheetContent extends StatelessWidget {
+  const _AboutSheetContent({required this.bottomPadding});
+
+  final double bottomPadding;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(34)),
+      child: ColoredBox(
+        color: const Color(0xFF211B2A),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(24, 20, 24, 32 + bottomPadding),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              SizedBox(
+                height: 28,
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: Container(
+                    width: 36,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFB8A7C9).withValues(alpha: 0.76),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'About GoToBed',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'GoToBed helps you end the day a little earlier.',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: const Color(0xFFCBB9A6),
+                  height: 1.58,
+                ),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                'Not through pressure, but through gentler evenings.',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: const Color(0xFFF9F1E7),
+                  height: 1.58,
+                ),
+              ),
+              const SizedBox(height: 26),
+              Text(
+                'One quieter night can change tomorrow.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: const Color(0xFFCBB9A6).withValues(alpha: 0.82),
+                  height: 1.55,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _TonightReflection extends StatelessWidget {
