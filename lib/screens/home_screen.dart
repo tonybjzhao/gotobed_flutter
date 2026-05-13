@@ -331,6 +331,9 @@ class _HomeScreenState extends State<HomeScreen>
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.66),
       backgroundColor: const Color(0xFF211B2A),
+      isDismissible: true,
+      enableDrag: true,
+      showDragHandle: false,
       transitionAnimationController: sheetController,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(34)),
@@ -349,15 +352,43 @@ class _HomeScreenState extends State<HomeScreen>
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Container(
-                  width: 36,
-                  height: 3,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF8D7AA0).withValues(alpha: 0.52),
-                    borderRadius: BorderRadius.circular(999),
+                SizedBox(
+                  height: 32,
+                  child: Stack(
+                    alignment: Alignment.topCenter,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Container(
+                          width: 34,
+                          height: 3,
+                          decoration: BoxDecoration(
+                            color: const Color(
+                              0xFFB8A7C9,
+                            ).withValues(alpha: 0.68),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: -10,
+                        right: -10,
+                        child: IconButton(
+                          onPressed: () => Navigator.of(context).maybePop(),
+                          visualDensity: VisualDensity.compact,
+                          icon: Icon(
+                            Icons.close_rounded,
+                            size: 20,
+                            color: const Color(
+                              0xFFCBB9A6,
+                            ).withValues(alpha: 0.7),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 8),
                 Text(
                   'About GoToBed',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -382,7 +413,7 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
                 const SizedBox(height: 26),
                 Text(
-                  'Tonight stays quiet on purpose. The app brings you back to one small choice: close the day, and let tomorrow begin with more room.',
+                  'One quieter night can change tomorrow.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: const Color(0xFFCBB9A6).withValues(alpha: 0.82),
                     height: 1.55,
