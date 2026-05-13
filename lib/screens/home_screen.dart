@@ -331,6 +331,7 @@ class _HomeScreenState extends State<HomeScreen>
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.66),
       backgroundColor: const Color(0xFF211B2A),
+      isScrollControlled: true,
       isDismissible: true,
       enableDrag: true,
       showDragHandle: false,
@@ -343,52 +344,27 @@ class _HomeScreenState extends State<HomeScreen>
         final bottomPadding = MediaQuery.paddingOf(context).bottom;
         return SafeArea(
           top: false,
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(
-              parent: AlwaysScrollableScrollPhysics(),
-            ),
+          child: Padding(
             padding: EdgeInsets.fromLTRB(24, 20, 24, 32 + bottomPadding),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 SizedBox(
-                  height: 32,
-                  child: Stack(
+                  height: 28,
+                  child: Align(
                     alignment: Alignment.topCenter,
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Container(
-                          width: 34,
-                          height: 3,
-                          decoration: BoxDecoration(
-                            color: const Color(
-                              0xFFB8A7C9,
-                            ).withValues(alpha: 0.68),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                        ),
+                    child: Container(
+                      width: 36,
+                      height: 3,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFB8A7C9).withValues(alpha: 0.76),
+                        borderRadius: BorderRadius.circular(999),
                       ),
-                      Positioned(
-                        top: -10,
-                        right: -10,
-                        child: IconButton(
-                          onPressed: () => Navigator.of(context).maybePop(),
-                          visualDensity: VisualDensity.compact,
-                          icon: Icon(
-                            Icons.close_rounded,
-                            size: 20,
-                            color: const Color(
-                              0xFFCBB9A6,
-                            ).withValues(alpha: 0.7),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
                   'About GoToBed',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
